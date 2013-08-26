@@ -87,7 +87,9 @@ angular.module('myApp.controllers', []).controller('AppCtrl', ['$scope', '$http'
 							top: Math.floor(coords[i].top) - 2,
 							height: coords[i].height + 1,
 							width: coords[i].width + 1,
-							position: 'absolute'
+						})
+						.attr({
+							'class': 'term_click'
 						})
 						.data('details', termDetails)
 						.on('click', function(e){
