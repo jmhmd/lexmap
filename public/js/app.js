@@ -8,7 +8,7 @@ angular.module('myApp', [
   'myApp.services',
   'myApp.directives'
 ]).
-config(function ($routeProvider, $locationProvider) {
+config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
   $routeProvider.
     when('/view1', {
       templateUrl: 'partials/partial1',
@@ -19,8 +19,8 @@ config(function ($routeProvider, $locationProvider) {
       controller: 'MyCtrl2'
     }).
     otherwise({
-      redirectTo: '/view1'
+      redirectTo: '/'
     });
 
   $locationProvider.html5Mode(true);
-});
+}]);
