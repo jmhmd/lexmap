@@ -9,7 +9,7 @@ angular.module('myApp.controllers', [])
 
 		$scope.getAnnotations = function(){
 
-			$http.get('/api/getTerms/annotations', {params: {text: $scope.textToAnnotate}})
+			$http.post('/api/getTerms/annotations', {text: $scope.textToAnnotate})
 				.then(function(result){
 					var coords = {},
 						resultBox = $('#annotationResult'),
@@ -70,7 +70,7 @@ angular.module('myApp.controllers', [])
 							'<h4>Is a:</h4>'+
 							'<span>'+term.isA.join(', ')+'</span>'+
 							'<h4>Link:</h4>'+
-							'<span>'+term.link+'</span>'
+							'<a href="'+term.link+'">'+term.link+'</span>'
 
 						$('#term_'+i)
 							.attr({

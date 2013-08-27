@@ -46,7 +46,7 @@ app.get('/', routes.index)
 app.get('/partials/:name', routes.partials)
 
 // JSON API
-app.get('/api/getTerms/:type', api.getTerms)
+app.post('/api/getTerms/:type', api.getTerms)
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index)

@@ -38,15 +38,17 @@ getAnnotations = function (text, cb) {
 	// Submit job
 	request.post(submitUrl, {form: params}, function(error, response, body){
 		if (error){
+			console.log(error)
 			return new Error(error)
 		}
-
+		console.log(response)
 		xmlParser(response.body, function(err, parsedObj){
 			if (error){
-				return new Error(error)
+				console.log(error)
+				cb(error)
 			}
 			if (parsedObj.errorStatus){
-				return new Error(parsedObj.errorStatus.longMessage)
+				cb(parsedObj.errorStatus.longMessage)
 			}
 			var result = {}
 			result.rawObj = parsedObj

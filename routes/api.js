@@ -8,11 +8,11 @@ exports.getTerms = function (req, res) {
 	var type = req.params.type
 
 	if (type === 'terms'){
-		parser.getTerms(req.query.text, function(err,terms){
+		parser.getTerms(req.body.text, function(err,terms){
 			res.send('200',terms)
 		})
 	} else if (type === 'annotations'){
-		parser.getAnnotations(req.query.text, function(err,contexts){
+		parser.getAnnotations(req.body.text, function(err,contexts){
 			res.send('200',contexts)
 		})
 	} else if (type === 'frequencies'){
