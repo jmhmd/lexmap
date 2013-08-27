@@ -31,8 +31,8 @@ angular.module('myApp.controllers', [])
 							terms[val.term] = val
 							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
 						} else {
-							if (!_.isUndefined(val.term.isA)){
-								terms[val.term].isA.push(val.term.isA)
+							if (!_.isUndefined(val.isA)){
+								terms[val.term].isA.push(val.isA)
 							}
 						}
 					})
