@@ -2,110 +2,85 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', []).controller('AppCtrl', ['$scope', '$http', function ($scope, $http) {
-	$scope.textToAnnotate = 'Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
-	$scope.annotationResult = ''
+angular.module('myApp.controllers', [])
+	.controller('AppCtrl', ['$scope', '$http', function ($scope, $http) {
+		$scope.textToAnnotate = 'Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
+		$scope.annotationResult = ''
 
-	$scope.getAnnotations = function(){
+		$scope.getAnnotations = function(){
 
-		$http.get('/api/getTerms/annotations', {params: {text: $scope.textToAnnotate}})
-			.then(function(result){
-				var coords = {},
-					resultBox = $('#annotationResult'),
-					resultDetails = $('#resultDetails'),
-					text = $scope.textToAnnotate
+			$http.get('/api/getTerms/annotations', {params: {text: $scope.textToAnnotate}})
+				.then(function(result){
+					var coords = {},
+						resultBox = $('#annotationResult'),
+						resultDetails = $('#resultDetails'),
+						text = $scope.textToAnnotate,
+						textLength = text.length,
+						newLength = textLength
 
-				console.log('request result', result)
-				/*initPopovers = function(){
-					$('[rel=popover]').popover({trigger: 'hover', placement: 'right'})
-				}*/
-
-				/*
-				/* aggregate data for matched term
-				*/
-				var terms = {}
-				_.forEach(result.data, function(val){
-					if (_.isUndefined(terms[val.term])){
-						terms[val.term] = val
-						terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
-					} else {
-						if (!_.isUndefined(val.term.isA)){
-							terms[val.term].isA.push(val.term.isA)
-						}
-					}
-				})
-
-				console.log('terms', terms)
-				
-				_.forEach( terms, function(term, i){
-				
-					/*if (typeof term.isA === 'undefined' || term.isA === 'Radlex ontology entity') {
-						if (i == result.length - 1) {
-							initPopovers()
-						}
-						return
-					}*/ 
+					console.log('request result', result)
 
 					/*
-					/* Generate hilighting boxes
+					/* aggregate data for matched term
 					*/
-					// correct for 0 (i think)
-					term.from = term.from - 1
-					
-					var termDetails = '<h4>Preferred Name:</h4>'+
-						'<span>'+term.term+'</span>'+
-						'<h4>Is a:</h4>'+
-						'<span>'+term.isA.join(', ')+'</span>'+
-						'<h4>Link:</h4>'+
-						'<span>'+term.link+'</span>'
+					var terms = {},
+						termsSorted = []
 
-					var hiliteBox = $('<div>'),
-						clickBox = $('<div>')
-					var replText = text.substr(0, term.from) + '<span id="termCoord">' +
-						text.substr(term.from, (term.to - term.from)) + '</span>' + text.substr(term.to, text.length)
-					resultBox.html(replText)
+					_.forEach(result.data, function(val){
+						if (_.isUndefined(terms[val.term])){
+							terms[val.term] = val
+							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
+						} else {
+							if (!_.isUndefined(val.term.isA)){
+								terms[val.term].isA.push(val.term.isA)
+							}
+						}
+					})
+
+					termsSorted = _.sortBy(terms, function(term){ return term.from })
+
+					console.log('terms', terms)
 					
-					// Now that a span surrounds our term, measure it so we can create the overlay
-					var termBox = $('#termCoord')
-					coords[i] = termBox.position()
-					coords[i].width = termBox.width()
-					coords[i].height = termBox.height()
-					
-					hiliteBox
-						.css({ 
-							left: Math.floor(coords[i].left) - 2,
-							top: Math.floor(coords[i].top) - 2,
-							height: coords[i].height + 1,
-							width: coords[i].width + 1
-						})
-						.attr({
-							'class': 'term_hilite'
-						})
-					clickBox
-						.css({ 
-							left: Math.floor(coords[i].left) - 2,
-							top: Math.floor(coords[i].top) - 2,
-							height: coords[i].height + 1,
-							width: coords[i].width + 1,
-						})
-						.attr({
-							'class': 'term_click'
-						})
-						.data('details', termDetails)
-						.on('click', function(e){
-							resultDetails.html($(e.target).data('details'))
-						})
-					
-					resultBox.parent().append(hiliteBox).append(clickBox)
-					
+					// place spans around each matched term
+					_.forEach(termsSorted, function(term, i){
+						/*
+						/* New tactic
+						*/
+
+						// annotator incorrectly defines first character as position 1
+						term.from = term.from - 1
+
+						var lengthDiff = newLength - textLength,
+							openTag = '<span id="term_'+i+'">',
+							closeTag = '</span>',
+							beforeTerm = text.slice(0,term.from + lengthDiff),
+							termText = text.slice(term.from + lengthDiff, term.to + lengthDiff),
+							afterTerm = text.slice(term.to + lengthDiff),
+							replacedText = beforeTerm + openTag + termText + closeTag + afterTerm
+
+						text = replacedText
+						newLength = text.length
+					})
+
 					resultBox.html(text)
-					
-					/*if (i === result.length - 1) {
-						initPopovers()
-					}*/
+
+					_.forEach(termsSorted, function(term, i){
+						var termDetails = '<h4>Preferred Name:</h4>'+
+							'<span>'+term.term+'</span>'+
+							'<h4>Is a:</h4>'+
+							'<span>'+term.isA.join(', ')+'</span>'+
+							'<h4>Link:</h4>'+
+							'<span>'+term.link+'</span>'
+
+						$('#term_'+i)
+							.attr({
+								'class': 'term_hilite'
+							})
+							.data('details', termDetails)
+							.on('click', function(e){
+								resultDetails.html($(e.target).data('details'))
+							})
+					})
 				})
-				
-				console.log('coords',coords)
-			})
-	}
+		}
 }])

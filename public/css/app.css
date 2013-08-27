@@ -4,12 +4,7 @@
   position: relative;
 }
 .term_hilite {
-  position: absolute;
   background-color: yellow;
-  z-index: -1;
   border-radius: 3px;
-}
-.term_click {
-  position: absolute;
   cursor: pointer;
 }

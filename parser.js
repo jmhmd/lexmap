@@ -12,7 +12,7 @@ function getTerms(text, cb){
 
 		terms = result.annotations.map(function(item){ return concept[0].context[0].term[0].concept[0].preferredName[0]})
 
-		console.log(terms)
+		//console.log(terms)
 		cb(null, terms)
 	})
 }
@@ -42,7 +42,7 @@ function getAnnotations(text, cb){
 			contexts.push(term)
 		})
 		
-		console.log(contexts)
+		//console.log(contexts)
 		cb(null, contexts)
 	})
 }
