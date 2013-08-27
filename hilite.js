@@ -1,3 +1,5 @@
+'use strict';
+
 var terms = [
   {
     "term": "malignant",
@@ -273,3 +275,90 @@ var terms = [
 
 var text = "Melanoma is a uterine artery embolization malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye"
 
+var _ = require('lodash')
+
+// return first non-space character index
+function getNextStart(text, startIndex){
+	var startIndex = startIndex || 0
+
+	if (text.substr(startIndex, 1) != ' '){ return startIndex }
+
+	var	nextSpace = text.indexOf(' ', startIndex),
+		nextWord = nextSpace + 1
+
+	while (text.substr(nextWord, 1) == ' '){
+		nextWord += 1
+	}
+
+	return nextWord
+}
+
+// return first space character index
+function getNextEnd(text, startIndex){
+	var end = text.indexOf(' ', startIndex || 0)
+	return end === -1 ? text.length : end
+}
+
+function getWords(text, startIndex, endIndex){
+	var startIndex = startIndex || 0,
+		endIndex = endIndex || text.length,
+		words = []
+
+	while (startIndex < endIndex) {
+		var next = getNextStart(text, startIndex),
+			end = getNextEnd(text, next)
+		words.push([next, end])
+		startIndex = end
+	}
+
+	return words
+}
+
+var newText = '',
+	words = getWords(text)
+
+var i = 1
+terms = _.map(terms, function(term){
+	term._id = i
+	i++
+	return term
+})
+
+var phrases = []
+_.forEach(words, function(val, i){
+	phrases[i] = []
+	var classes = '',
+		word = text.substr(val[0],val[1]-val[0])
+
+	_.forEach(terms, function(term){
+		if (val[0] === term.from - 1 || (val[0] > term.from - 1 && val[0] < term.to)){
+			phrases[i].push(term._id)
+			classes += 't_'+term._id+' '
+		}
+	})
+
+
+	if (phrases[i].length > 0){
+		newText += '<span id="w_'+i+'" class="'+classes+'">' + word + '</span> '
+
+	} else {
+		newText += word + ' '
+	}
+})
+
+console.log(newText)
+console.log(phrases)
+
+// now loop through terms/phrases and apply styles/actions
+/*
+_.forEach(terms, function(term){
+	$('.t_'+term._id)
+		.css()
+		.on('click', function(e){
+
+		})
+})
+*/
+
+//console.log(getWords(text))
+//console.log(getWords(text).map(function(i){ return text.substr(i[0],i[1]-i[0]) }).join(' '))
