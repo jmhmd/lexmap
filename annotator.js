@@ -41,7 +41,6 @@ getAnnotations = function (text, cb) {
 			console.log(error)
 			return new Error(error)
 		}
-		console.log(response)
 		xmlParser(response.body, function(err, parsedObj){
 			if (error){
 				console.log(error)

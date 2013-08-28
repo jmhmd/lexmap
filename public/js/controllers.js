@@ -4,17 +4,21 @@
 
 angular.module('myApp.controllers', [])
 	.controller('AppCtrl', ['$scope', '$http', function ($scope, $http) {
+		var spinner = new Spinner({top: '50px'})
+
 		$scope.textToAnnotate = 'Melanoma is a uterine artery embolization malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
 		$scope.annotationResult = ''
 
 		$scope.getAnnotations = function(){
 
-			$http.post('/api/getTerms/annotations', {text: $scope.textToAnnotate})
+			spinner.spin($('#annotationResult').get(0))
+
+			$http.post('/api/getTerms/annotations', {text: $scope.textToAnnotate.replace(/\n/g, ' <br> ')})
 				.then(function(result){
 					var coords = {},
 						resultBox = $('#annotationResult'),
 						resultDetails = $('#resultDetails'),
-						text = $scope.textToAnnotate
+						text = $scope.textToAnnotate.replace(/\n/g, ' <br> ')
 
 					console.log('request result', result)
 
@@ -28,7 +32,7 @@ angular.module('myApp.controllers', [])
 						if (_.isUndefined(terms[val.term])){
 							terms[val.term] = val
 							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
-						} else {
+						} else if (terms[val.term].from === val.from){
 							if (!_.isUndefined(val.isA)){
 								terms[val.term].isA.push(val.isA)
 							}
@@ -101,16 +105,17 @@ angular.module('myApp.controllers', [])
 
 
 						if (phrases[i].length > 0){
-							newText += '<span id="w_'+i+'" class="'+classes+'">' + word + '</span> '
+							newText += '<span id="w_'+i+'" class="'+classes+'">' + word +
+								'<div class="underline-container"></div></span> '
 
 						} else {
 							newText += word + ' '
 						}
 					})
 
-					console.log(newText)
 					console.log(phrases)
-					
+
+					spinner.stop()
 					resultBox.html(newText)
 
 					// now loop through terms/phrases and apply styles/actions
@@ -120,17 +125,23 @@ angular.module('myApp.controllers', [])
 							'<h4>Is a:</h4>'+
 							'<span>'+term.isA.join(', ')+'</span>'+
 							'<h4>Link:</h4>'+
-							'<a href="'+term.link+'">'+term.link+'</span>'
+							'<a href="'+term.link+'" target="_blank">'+term.link+'</span>'
 
 						$('.t_'+term._id)
-							.attr({
-								'class': 'term_hilite'
-							})
+							//.attr({
+							//	'class': 'term_hilite'
+							//})
+							.addClass('term_hilite')
 							//.css()
 							.data('details', termDetails)
 							.on('click', function(e){
 								resultDetails.html($(e.target).data('details'))
 							})
+							.find('div.underline-container')
+							.append($('<div>')
+								.attr({'class': 'underline'})
+								.css({'background-color': '#'+(Math.random().toString(16) + '000000').slice(2, 8)})
+							)
 					})
 
 				})
