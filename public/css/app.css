@@ -42,3 +42,6 @@ html, body {
 	height: 70px;
 	clear: both;
 }
+.tab-content {
+	padding-top: 20px;
+}
