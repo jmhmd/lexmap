@@ -1,12 +1,14 @@
 /* app css stylesheet */
-
+html, body {
+	height: 100%
+}
 .resultContainer {
-  position: relative;
+	position: relative;
 }
 .term_hilite {
-  background-color: rgb(255, 249, 111);
-  cursor: pointer;
-  position: relative;
+	background-color: rgb(255, 249, 111);
+	cursor: pointer;
+	position: relative;
 }
 .underline-container {
 	display: inline;
@@ -18,6 +20,25 @@
 }
 .underline {
 	width: 100%;
-  height: 2px;
-  margin-bottom: 1px;	
+	height: 2px;
+	margin-bottom: 1px;	
+}
+.footer > .navbar {
+	border-radius: 0;
+	border-width: 1px 0 0 0;
+	margin-bottom: 0;
+}
+.footer {
+	height: 70px;
+	padding-top: 20px;
+}
+.wrapper {
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin-bottom: -70px;
+}
+.push {
+	height: 70px;
+	clear: both;
 }

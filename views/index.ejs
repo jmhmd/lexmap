@@ -17,13 +17,30 @@
 	<script type="text/javascript" src="/js/controllers.js"></script>
 	<script type="text/javascript" src="/js/filters.js"></script>
 	<script type="text/javascript" src="/js/directives.js"></script>
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-43604000-1', 'rlverify.herokuapp.com');
+		ga('send', 'pageview');
+
+		</script>
 	<!--
 	<script type="text/javascript" src="/js/raddrop-central.min.js"></script>
 	-->
 </head>
 <body ng-app="myApp" ng-controller="AppCtrl">
+<div class="wrapper">
 	<nav class="navbar navbar-default navbar-static-top" role="navigation">
 		<a class="navbar-brand" href="#">RLVerify</a>
+		<p class="pull-right navbar-text">
+			<a href="https://github.com/jmhmd/rlverify/issues" class="navbar-link" target="_blank">
+				<span class="glyphicon glyphicon-question-sign"></span> Report a bug, ask a question, suggest a feature
+			</a>
+		</p>
 	</nav>
 	<div class="container">
 		<div class="row">
@@ -48,5 +65,14 @@
 			</div>
 		</div>
 	</div>
+	<div class="push"></div>
+</div>
+<div class="footer">
+	<div class="navbar navbar-default">
+		<p class="muted navbar-text">
+			Created by Jason Hostetter, M.D. and Jim Morrison, M.D. - 2013
+		</p>
+	</div>
+</div>
 </body>
 </html>
