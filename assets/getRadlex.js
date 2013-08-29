@@ -17,9 +17,20 @@ function pushButton(){
     }
 
     reader.onloadend = function(e) {
-        parseXML(e.target.result);
+        extractXML(e.target.result);
     }
     reader.readAsText(files[0]);
+}
+
+function extractXML(fileData)  {
+    file = new DOMParser();
+
+    parser = file.parseFromString(fileData, "text/xml");
+
+    var wrapper = parser.getElementsByTagName("ContentRTF");
+    var dataXML = wrapper[0].childNodes[0].nodeValue.slice(wrapper[0].childNodes[0].nodeValue.indexOf("utf-8")+8, wrapper[0].childNodes[0].nodeValue.length, "text/xml")
+    parseXML(dataXML);
+
 }
 
 function parseXML(fileData) {
