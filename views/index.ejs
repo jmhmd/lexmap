@@ -52,15 +52,15 @@
 							<div class="form-group">
 								<textarea ng-model="textToAnnotate" class="form-control" style="height:400px;"></textarea>
 							</div>
-							<button class="btn" ng-click="getAnnotations()">Verify</button>
+							<button class="btn" ng-click="annotateText()">Verify</button>
 						</form>
 					</tab>
 					<tab heading="File">
 						<form>
 							<div class="form-group">
-								<input type="file" id="files" name="file" />
+								<input type="file" id="files" name="file" ng-model="uploadFile" />
 							</div>
-							<button class="btn">Upload</button>
+							<button class="btn" ng-click="annotateFile()">Upload</button>
 						</form>
 					</tab>
 				</tabset>
