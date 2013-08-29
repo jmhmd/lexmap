@@ -14,11 +14,14 @@ angular.module('myApp.services', [])
 
 			text = text.replace(/\n/g, ' <br> ')
 
+			console.log('sent annotator request')
+
 			$http.post('/api/getTerms/annotations', {text: text})
 				.then(function(result){
 					var resultBox = $('#annotationResult')
 
-					console.log('request result', result)
+					console.log('annotator results returned')
+					console.log('result:', result)
 
 					/*
 					/* aggregate data for matched term
@@ -35,6 +38,8 @@ angular.module('myApp.services', [])
 							}
 						}
 					})
+
+					console.log('terms:',terms)
 
 					/*
 					/* start sorting out words, and which phrases they are included in
@@ -62,6 +67,8 @@ angular.module('myApp.services', [])
 						return end === -1 ? text.length : end
 					}
 
+
+					//build array of each word in text box, as bounded by space character
 					function getWords(text, startIndex, endIndex){
 						var startIndex = startIndex || 0,
 							endIndex = endIndex || text.length,
@@ -88,6 +95,8 @@ angular.module('myApp.services', [])
 						return term
 					})
 
+					// for each word in raw text, check if it falls within
+					// any term's bounds, and if it does, add that term's class
 					var phrases = []
 					_.forEach(words, function(val, i){
 						phrases[i] = []
@@ -111,7 +120,7 @@ angular.module('myApp.services', [])
 						}
 					})
 
-					console.log(phrases)
+					//console.log(phrases)
 
 					resultBox.html(newText)
 					that.hiliteText(terms)
@@ -122,9 +131,20 @@ angular.module('myApp.services', [])
 						})
   				})
 		}
+
+		this.notateFile = function(files, opts, cb){
+			if(_.isFunction(opts)){ cb = opts }
+
+			var fileParser = new XmlParser()
+			
+			fileParser.parseFiles(files, function(err, parsedFile){
+				that.notateText(parsedFile, cb)
+			})
+		}
+
 		this.hiliteText = function(terms){
 			var resultDetails = $('#resultDetails')
-			
+
 			_.forEach(terms, function(term){
 				var termDetails = '<h4>Preferred Name:</h4>'+
 					'<span>'+term.term+'</span>'+

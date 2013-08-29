@@ -5,6 +5,9 @@ html, body {
 .resultContainer {
 	position: relative;
 }
+#resultDetails {
+	position: fixed
+}
 .term_hilite {
 	background-color: rgb(255, 249, 111);
 	cursor: pointer;

@@ -13,6 +13,8 @@
 
 	<script src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.2.7/spin.min.js"></script>
 
+	<script src="/js/lib/xml-parser/getRadlex.js"></script>
+
 	<script type="text/javascript" src="/js/app.js"></script>
 	<script type="text/javascript" src="/js/services.js"></script>
 	<script type="text/javascript" src="/js/controllers.js"></script>
@@ -58,9 +60,9 @@
 					<tab heading="File">
 						<form>
 							<div class="form-group">
-								<input type="file" id="files" name="file" ng-model="uploadFile" />
+								<input type="file" id="files" name="file" fileread="uploadFile" />
 							</div>
-							<button class="btn" ng-click="annotateFile()">Upload</button>
+							<button class="btn" ng-click="annotateFile()">Verify</button>
 						</form>
 					</tab>
 				</tabset>

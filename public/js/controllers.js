@@ -23,7 +23,7 @@ angular.module('myApp.controllers', [])
 
 			spinner.spin($('#annotationResult').get(0))
 
-			Annotator.notateFile($scope.uploadFile.files, function(err){
+			Annotator.notateFile($scope.uploadFile, function(err){
 				spinner.stop()
 			})
 		}
