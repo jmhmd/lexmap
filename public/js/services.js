@@ -24,13 +24,14 @@ angular.module('myApp.services', [])
 					console.log('result:', result)
 
 					/*
-					/* aggregate data for matched term
+					/* aggregate data for matched term, get all instances of term
 					*/
 					var terms = {}
 
 					_.forEach(result.data, function(val){
 						if (_.isUndefined(terms[val.term])){
 							terms[val.term] = val
+							terms['coords'] = [[]]
 							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
 						} else if (terms[val.term].from === val.from){
 							if (!_.isUndefined(val.isA)){
