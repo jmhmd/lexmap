@@ -54,7 +54,9 @@
 							<div class="form-group">
 								<textarea ng-model="textToAnnotate" class="form-control" style="height:400px;"></textarea>
 							</div>
-							<button class="btn" ng-click="annotateText()">Verify</button>
+							<div class="form-group">
+								<button class="btn" ng-click="annotateText()">Verify</button>
+							</div>
 						</form>
 					</tab>
 					<tab heading="File">
@@ -62,10 +64,33 @@
 							<div class="form-group">
 								<input type="file" id="files" name="file" fileread="uploadFile" />
 							</div>
-							<button class="btn" ng-click="annotateFile()">Verify</button>
+							<div class="form-group">
+								<button class="btn" ng-click="annotateFile()">Verify</button>
+							</div>
+							<div class="form-group">
+								<small class="text-muted">FYI: The annotator can take a long time with large files.</small>
+							</div>
 						</form>
 					</tab>
 				</tabset>
+				<div class="well well-sm">
+					<h4>Options</h4>
+					<form class="form-horizontal" role="form">
+						Highlight occurences of matched terms:
+						<div class="radio">
+							<label>
+								<input type="radio" ng-model="options.showAllInstances" ng-value="true">
+								All
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input type="radio" ng-model="options.showAllInstances" ng-value="false">
+								First 
+							</label>
+						</div>
+					</form>
+				</div>
 			</div>
 			<div class="col-md-4">
 				<div id="resultContainer">

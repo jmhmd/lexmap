@@ -10,7 +10,16 @@ angular.module('myApp.services', [])
   		var that = this
 
 		this.notateText = function(text, opts, cb){
-			if(_.isFunction(opts)){ cb = opts }
+			var defaultOpts = {
+					showAllInstances: true
+				}
+			if(_.isFunction(opts)){
+				cb = opts
+				opts = defaultOpts
+			}
+			else if (_.isObject(opts)){
+				_.defaults(opts,defaultOpts)
+			}
 
 			text = text.replace(/\n/g, ' <br> ')
 
@@ -25,17 +34,44 @@ angular.module('myApp.services', [])
 
 					/*
 					/* aggregate data for matched term, get all instances of term
+					/* terms format should be:
+					{
+						'preferred-name': {
+							term: 'String',
+							isA: ['String'],
+							coords: [ [from,to], ... ], // all other instances of the term
+							link: 'link to bioportal term def'
+						}
+					
+					}
 					*/
 					var terms = {}
 
 					_.forEach(result.data, function(val){
 						if (_.isUndefined(terms[val.term])){
+							terms[val.term] = {
+								term: val.term,
+								isA: _.isUndefined(val.isA) ? [] : [val.isA],
+								coords: [[val.from, val.to]],
+								link: val.link
+							}
+							/*
 							terms[val.term] = val
 							terms['coords'] = [[]]
 							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
-						} else if (terms[val.term].from === val.from){
-							if (!_.isUndefined(val.isA)){
-								terms[val.term].isA.push(val.isA)
+							*/
+						} else {
+							var termMatched = _.filter(terms[val.term].coords, function(coord){
+													return _.isEqual(coord, [val.from, val.to])
+												}).length
+							if (termMatched > 0){
+								// matched term already seen, could have different isA definition
+								if (!_.isUndefined(val.isA) && !_.contains(terms[val.term].isA, val.isA)){
+									terms[val.term].isA.push(val.isA)
+								}
+							} else {
+								// matched term coords not seen yet, add to list
+								terms[val.term].coords.push([val.from, val.to])
 							}
 						}
 					})
@@ -98,21 +134,37 @@ angular.module('myApp.services', [])
 
 					// for each word in raw text, check if it falls within
 					// any term's bounds, and if it does, add that term's class
-					var phrases = []
+					function isInBounds(val, bounds){
+					// takes val [from, to] and bounds [from, to]. Returns true if val.from is equal to
+					// bounds.from or between bounds.from and bounds.to
+					// TODO: make option for index correction (this data source uses first char as index 1)
+						if (val[0] === bounds[0] - 1 || (val[0] > bounds[0] - 1 && val[0] < bounds[1])){
+							return true
+						}
+					}
 					_.forEach(words, function(val, i){
-						phrases[i] = []
-						var classes = '',
+						var matchedPhrases = [],
+							classes = '',
 							word = text.substr(val[0],val[1]-val[0])
 
 						_.forEach(terms, function(term){
-							if (val[0] === term.from - 1 || (val[0] > term.from - 1 && val[0] < term.to)){
-								phrases[i].push(term._id)
-								classes += 't_'+term._id+' '
+							if (opts.showAllInstances){
+								_.forEach(term.coords, function(coord){
+									if (isInBounds(val, coord)){
+										matchedPhrases.push(term._id)
+										classes += 't_'+term._id+' '
+									}
+								})	
+							} else { // only check first instance of word
+								if (isInBounds(val, term.coords[0])){
+									matchedPhrases.push(term._id)
+									classes += 't_'+term._id+' '
+								}
 							}
 						})
 
 
-						if (phrases[i].length > 0){
+						if (matchedPhrases.length > 0){
 							newText += '<span id="w_'+i+'" class="'+classes+'">' + word +
 								'<div class="underline-container"></div></span> '
 
@@ -134,12 +186,15 @@ angular.module('myApp.services', [])
 		}
 
 		this.notateFile = function(files, opts, cb){
-			if(_.isFunction(opts)){ cb = opts }
+			if(_.isFunction(opts)){
+				cb = opts
+				opts = {}
+			}
 
 			var fileParser = new XmlParser()
 			
 			fileParser.parseFiles(files, function(err, parsedFile){
-				that.notateText(parsedFile, cb)
+				that.notateText(parsedFile, opts, cb)
 			})
 		}
 
