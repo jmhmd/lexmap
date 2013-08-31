@@ -6,7 +6,7 @@ angular.module('myApp.controllers', [])
 	.controller('AppCtrl', ['$scope', '$http', function ($scope, $http) {
 		var spinner = new Spinner({top: '50px'})
 
-		$scope.textToAnnotate = 'Melanoma is a uterine artery embolization malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
+		$scope.textToAnnotate = 'Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
 		$scope.annotationResult = ''
 
 		$scope.getAnnotations = function(){
