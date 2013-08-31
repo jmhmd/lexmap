@@ -30,7 +30,6 @@ angular.module('myApp.services', [])
 					var resultBox = $('#annotationResult')
 
 					console.log('annotator results returned')
-					console.log('result:', result)
 
 					/*
 					/* aggregate data for matched term, get all instances of term
@@ -55,11 +54,6 @@ angular.module('myApp.services', [])
 								coords: [[val.from, val.to]],
 								link: val.link
 							}
-							/*
-							terms[val.term] = val
-							terms['coords'] = [[]]
-							terms[val.term].isA = _.isUndefined(terms[val.term].isA) ? [] : [terms[val.term].isA]
-							*/
 						} else {
 							var termMatched = _.filter(terms[val.term].coords, function(coord){
 													return _.isEqual(coord, [val.from, val.to])
@@ -76,7 +70,27 @@ angular.module('myApp.services', [])
 						}
 					})
 
-					console.log('terms:',terms)
+					/*
+					/* Sort terms by first occurrence
+					*/
+					if (!opts.showAllInstances){
+						// first sort each term's instances
+						_.forEach(terms, function(val, i){
+							terms[i].coords = _.sortBy(val.coords, function(coord){return coord[0]})
+						})
+						// then sort terms by their first instance's location
+						terms = _.sortBy(terms, function(term){return term.coords[0][0]})
+					}
+
+					/*
+					/* give each term an id for use with assigning highlighting classes
+					*/
+					var i = 1
+					terms = _.map(terms, function(term){
+						term._id = i
+						i++
+						return term
+					})
 
 					/*
 					/* start sorting out words, and which phrases they are included in
@@ -124,14 +138,6 @@ angular.module('myApp.services', [])
 					var newText = '',
 						words = getWords(text)
 
-					// give each term an id
-					var i = 1
-					terms = _.map(terms, function(term){
-						term._id = i
-						i++
-						return term
-					})
-
 					// for each word in raw text, check if it falls within
 					// any term's bounds, and if it does, add that term's class
 					function isInBounds(val, bounds){
@@ -142,31 +148,63 @@ angular.module('myApp.services', [])
 							return true
 						}
 					}
+					function addPadding(curr, last){
+						// check if previous word matched same term
+						var padded = [],
+							intersection = _.intersection(curr, last),
+							difference = _.difference(curr, last)
+
+						_.forEach(intersection, function(termId, i){
+							var lastIndex = _.indexOf(last, termId)
+							if (lastIndex > -1){
+								for (var j=padded.length; j<lastIndex; j++){ padded.push(0) }
+							}
+							padded.push(termId)
+						})
+						// tack on terms not matched on prior word
+						return padded.concat(difference)
+					}
+
+					var matchedPhrases = []
 					_.forEach(words, function(val, i){
-						var matchedPhrases = [],
-							classes = '',
+						var classes = '',
+							divPadding = 0,
 							word = text.substr(val[0],val[1]-val[0])
+
+						matchedPhrases[i] = []
 
 						_.forEach(terms, function(term){
 							if (opts.showAllInstances){
 								_.forEach(term.coords, function(coord){
 									if (isInBounds(val, coord)){
-										matchedPhrases.push(term._id)
+										matchedPhrases[i].push(term._id)
 										classes += 't_'+term._id+' '
 									}
 								})	
 							} else { // only check first instance of word
 								if (isInBounds(val, term.coords[0])){
-									matchedPhrases.push(term._id)
+									matchedPhrases[i].push(term._id)
 									classes += 't_'+term._id+' '
 								}
 							}
 						})
 
 
-						if (matchedPhrases.length > 0){
-							newText += '<span id="w_'+i+'" class="'+classes+'">' + word +
-								'<div class="underline-container"></div></span> '
+						if (matchedPhrases[i].length > 0){
+							newText += '<span id="w_'+i+'" class="matched-word '+classes+'">' + word +
+								'<div class="underline-container">'
+							if (i > 0 && matchedPhrases[i-1].length > 0){
+								matchedPhrases[i] = addPadding(matchedPhrases[i], matchedPhrases[i-1])
+							}
+							// add empty divs for padding
+							_.forEach(matchedPhrases[i], function(termId){
+								if (termId === 0){
+									newText += '<div class="padding"></div>'
+								} else {
+									newText += '<div class="underline t_'+termId+'"></div>'
+								}
+							})
+							newText += '</div></span> '
 
 						} else {
 							newText += word + ' '
@@ -209,7 +247,7 @@ angular.module('myApp.services', [])
 					'<h4>Link:</h4>'+
 					'<a href="'+term.link+'" target="_blank">'+term.link+'</span>'
 
-				$('.t_'+term._id)
+				$('.matched-word.t_'+term._id)
 					//.attr({
 					//	'class': 'term_hilite'
 					//})
@@ -220,10 +258,9 @@ angular.module('myApp.services', [])
 						resultDetails.html($(e.target).data('details'))
 					})
 					.find('div.underline-container')
-					.append($('<div>')
-						.attr({'class': 'underline'})
-						.css({'background-color': '#'+(Math.random().toString(16) + '000000').slice(2, 8)})
-					)
+
+				$('.underline.t_'+term._id)
+					.css({'background-color': '#'+(Math.random().toString(16) + '000000').slice(2, 8)})
 			})
 		}
 	}])
