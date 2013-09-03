@@ -60,7 +60,7 @@ function XmlParser(){
                 case "3":
                     //2nd Column: field -->choices
                     for (var j=0;j<x[i].getElementsByTagName("choice").length;j++) {
-                        resultText += '<td style="color: red"> '
+                        resultText += '<td> '
                         resultText += x[i].getElementsByTagName("choice")[j].childNodes[0].nodeValue
                         resultText += " </td>"
 

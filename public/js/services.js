@@ -245,7 +245,7 @@ angular.module('myApp.services', [])
 					'<h4>Is a:</h4>'+
 					'<span>'+term.isA.join(', ')+'</span>'+
 					'<h4>Link:</h4>'+
-					'<a href="'+term.link+'" target="_blank">'+term.link+'</span>'
+					'<a href="'+term.link+'" title="'+term.link+'" target="_blank">BioPortal Definition</span>'
 
 				$('.matched-word.t_'+term._id)
 					//.attr({
