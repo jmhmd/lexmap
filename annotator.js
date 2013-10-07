@@ -8,6 +8,12 @@ var API_KEY= '5758f84b-562e-46cb-890b-ff787cc52bed',
 
 var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye"
 
+/*---------------------
+// virtual ontology ids:
+// Radlex: 1057/50515
+// LOINC: 1350/47637
+// SNOMED: 1353/46896
+*/
 var params = {
 		'longestOnly':'false',
 		'wholeWordOnly':'true',
@@ -19,8 +25,8 @@ var params = {
 		'minTermSize':'3', 
 		'scored':'true',  
 		'withSynonyms':'true', 
-		'ontologiesToExpand':'1057',   
-		'ontologiesToKeepInResult':'1057',   
+		'ontologiesToExpand':'1057,1350,1353',   
+		'ontologiesToKeepInResult':'1057,1350,1353',   
 		'isVirtualOntologyId':'true', 
 		'semanticTypes':'',  //T017,T047,T191&" #T999&"
 		'levelMax':'0',

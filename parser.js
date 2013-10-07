@@ -32,11 +32,13 @@ function getAnnotations(text, cb){
 				term.to = parseInt(val.context[0].to[0])
 				term.isA = val.concept[0].preferredName[0]
 				term.link = val.context[0].concept[0].fullId[0]
+				term.ontology = val.concept[0].localOntologyId[0]
 			} else { // others I know of are mgrepContextBean - seems to mean it does not have is_a closure info
 				term.term = val.context[0].term[0].concept[0].preferredName[0]
 				term.from = parseInt(val.context[0].from[0])
 				term.to = parseInt(val.context[0].to[0])
 				term.link = val.context[0].term[0].concept[0].fullId[0]
+				term.ontology = val.context[0].term[0].concept[0].localOntologyId[0]
 			}
 				
 			contexts.push(term)

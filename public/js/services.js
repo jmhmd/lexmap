@@ -32,14 +32,19 @@ angular.module('myApp.services', [])
 					console.log('annotator results returned')
 
 					/*
-					/* aggregate data for matched term, get all instances of term
-					/* terms format should be:
+					/* aggregate data for each matched term by term and ontology based on location
+					/* 
 					{
-						'preferred-name': {
-							term: 'String',
-							isA: ['String'],
-							coords: [ [from,to], ... ], // all other instances of the term
-							link: 'link to bioportal term def'
+						'preferred_name': {
+							ontology_id_1: {
+								term: 'String',
+								isA: ['String'],
+								coords: [ [from,to], ... ], // all other instances of the term
+								link: 'link to bioportal term def'
+							},
+							ontology_id_2: {
+								...
+							}
 						}
 					
 					}
@@ -48,24 +53,30 @@ angular.module('myApp.services', [])
 
 					_.forEach(result.data, function(val){
 						if (_.isUndefined(terms[val.term])){
-							terms[val.term] = {
+							terms[val.term] = {}
+						}
+						if (_.isUndefined(terms[val.term][val.ontology])){
+							terms[val.term][val.ontology] = {
 								term: val.term,
 								isA: _.isUndefined(val.isA) ? [] : [val.isA],
 								coords: [[val.from, val.to]],
 								link: val.link
 							}
 						} else {
-							var termMatched = _.filter(terms[val.term].coords, function(coord){
+							/*var matchedTerms = _.reduce(terms[val.term], function(prev, ontology){
+									return concat(prev, ontology.coords)
+								}, [])*/
+							var termMatched = _.filter(terms[val.term][val.ontology].coords, function(coord){
 													return _.isEqual(coord, [val.from, val.to])
 												}).length
 							if (termMatched > 0){
 								// matched term already seen, could have different isA definition
-								if (!_.isUndefined(val.isA) && !_.contains(terms[val.term].isA, val.isA)){
-									terms[val.term].isA.push(val.isA)
+								if (!_.isUndefined(val.isA) && !_.contains(terms[val.term][val.ontology].isA, val.isA)){
+									terms[val.term][val.ontology].isA.push(val.isA)
 								}
 							} else {
 								// matched term coords not seen yet, add to list
-								terms[val.term].coords.push([val.from, val.to])
+								terms[val.term][val.ontology].coords.push([val.from, val.to])
 							}
 						}
 					})
@@ -75,11 +86,13 @@ angular.module('myApp.services', [])
 					*/
 					if (!opts.showAllInstances){
 						// first sort each term's instances
-						_.forEach(terms, function(val, i){
-							terms[i].coords = _.sortBy(val.coords, function(coord){return coord[0]})
+						_.forEach(terms, function(term, i){
+							_.forEach(term, function(val, key){
+								terms[i][key].coords = _.sortBy(val.coords, function(coord){return coord[0]})
+							})
 						})
 						// then sort terms by their first instance's location
-						terms = _.sortBy(terms, function(term){return term.coords[0][0]})
+						terms = _.sortBy(terms, function(term){return term[0].coords[0][0]})
 					}
 
 					/*
@@ -174,15 +187,18 @@ angular.module('myApp.services', [])
 						matchedPhrases[i] = []
 
 						_.forEach(terms, function(term){
+							var termCoords = _.reduce(term, function(prev, ontology, key){
+									return (key !== '_id') ? prev : prev.concat(ontology.coords)
+								}, [])
 							if (opts.showAllInstances){
-								_.forEach(term.coords, function(coord){
+								_.forEach(termCoords, function(coord){
 									if (isInBounds(val, coord)){
 										matchedPhrases[i].push(term._id)
 										classes += 't_'+term._id+' '
 									}
 								})	
 							} else { // only check first instance of word
-								if (isInBounds(val, term.coords[0])){
+								if (isInBounds(val, termCoords[0])){
 									matchedPhrases[i].push(term._id)
 									classes += 't_'+term._id+' '
 								}
@@ -237,27 +253,50 @@ angular.module('myApp.services', [])
 		}
 
 		this.hiliteText = function(terms){
-			var resultDetails = $('#resultDetails')
+			var resultDetails = $('#resultDetails'),
+				termsByLoc = {}
+
+			// aggregate terms by location, so we have a single set of data for each
+			// clickable term
+			_.forEach(terms, function(term){
+				var loc = term.coords[0] + ',' + term.coords[1]
+				if (_.isUndefined(termsByLoc[loc])){
+					termsByLoc[loc] = term
+					termsByLoc[loc].term = [term.term]
+				} else {
+					termsByLoc[loc].term.push(term.term)
+					termsByLoc[loc].isA = _.union(termsByLoc[loc].isA, term.isA)
+					termsByLoc[loc].ontology = _.union(termsByLoc[loc].ontology, term.ontology)
+				}
+			})
 
 			_.forEach(terms, function(term){
 				var termDetails = '<h4>Preferred Name:</h4>'+
-					'<span>'+term.term+'</span>'+
+					'<span>'+term.term.join(', ')+'</span>'+
 					'<h4>Is a:</h4>'+
 					'<span>'+term.isA.join(', ')+'</span>'+
 					'<h4>Link:</h4>'+
-					'<a href="'+term.link+'" title="'+term.link+'" target="_blank">BioPortal Definition</span>'
+					'<a href="'+term.link+'" title="'+term.link+'" target="_blank">BioPortal Definition</a>'+
+					'<h4>Matched Ontology:</h4>'+
+					'<span>'+term.ontology.join(', ')+'</span>'
 
-				$('.matched-word.t_'+term._id)
-					//.attr({
-					//	'class': 'term_hilite'
-					//})
-					.addClass('term_hilite')
-					//.css()
-					.data('details', termDetails)
-					.on('click', function(e){
-						resultDetails.html($(e.target).data('details'))
-					})
-					.find('div.underline-container')
+				var words = $('.matched-word.t_'+term._id)
+
+				_.forEach(words, function(word){
+					// add matched info and listener if needed
+					if (word.hasClass('term_hilite')){
+					// click event already attached, just append info
+						word.data('details', word.data('details') + termDetails)
+					} else {
+						word.addClass('term_hilite')
+							//.css()
+							.data('details', termDetails)
+							.on('click', function(e){
+								resultDetails.html($(e.target).data('details'))
+							})
+							//.find('div.underline-container')
+					}
+				})
 
 				$('.underline.t_'+term._id)
 					.css({'background-color': '#'+(Math.random().toString(16) + '000000').slice(2, 8)})

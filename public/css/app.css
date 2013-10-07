@@ -8,6 +8,9 @@ html, body {
 #resultDetails {
 	position: fixed
 }
+#annotationResult {
+	line-height: 34px;
+}
 .term_hilite {
 	background-color: rgb(255, 249, 111);
 	cursor: pointer;

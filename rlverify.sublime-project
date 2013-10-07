@@ -2,10 +2,16 @@
 	"folders":
 	[
 		{
+			"follow_symlinks": true,
 			"path": "/Users/brenna/Desktop/Jason/www/rlverify"
 		},
 		{
+			"follow_symlinks": true,
 			"path": "/Users/JJM/Desktop/rlverify"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "/home/jmhmd/www/rlverify"
 		}
 	]
 }
