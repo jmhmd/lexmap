@@ -75,8 +75,8 @@
 				</tabset>
 				<div class="well well-sm">
 					<h4>Options</h4>
-					<form class="form-horizontal" role="form">
-						Highlight occurences of matched terms:
+					<form class="form-horizontal verifier-options" role="form">
+						<p class="help-block">Highlight occurences of matched terms:</p>
 						<div class="radio">
 							<label>
 								<input type="radio" ng-model="options.showAllInstances" ng-value="true">
@@ -87,6 +87,25 @@
 							<label>
 								<input type="radio" ng-model="options.showAllInstances" ng-value="false">
 								First 
+							</label>
+						</div>
+						<p class="help-block">Choose which ontologies to verify against:</p>
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" ng-model="options.ontologies.Radlex">
+								Radlex 
+							</label>
+						</div>
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" ng-model="options.ontologies.SNOMED">
+								SNOMED 
+							</label>
+						</div>
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" ng-model="options.ontologies.LOINC">
+								LOINC 
 							</label>
 						</div>
 					</form>

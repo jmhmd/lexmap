@@ -14,6 +14,10 @@ html, body {
 #annotationResult {
 	line-height: 34px;
 }
+form.verifier-options p {
+	margin-top: 20px;
+	margin-bottom: 0;
+}
 .term_hilite {
 	background-color: rgb(255, 249, 111);
 	cursor: pointer;

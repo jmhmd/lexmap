@@ -18,6 +18,11 @@ angular.module('myApp.services', [])
 				'50515': 'Radlex',
 				'47637': 'LOINC',
 				'46896': 'SNOMED'
+  			},
+  			virtualIds = {
+  				Radlex: '1057',
+  				LOINC: '1350',
+  				SNOMED: '1353'
   			}
 
 		this.notateText = function(text, opts, cb){
@@ -36,7 +41,10 @@ angular.module('myApp.services', [])
 
 			console.log('sent annotator request')
 
-			$http.post('/api/getTerms/annotations', {text: text})
+			var includedOntologies = []
+			_.forEach(opts.ontologies, function(ont, key){ if (ont) { includedOntologies.push(virtualIds[key]) }})
+
+			$http.post('/api/getTerms/annotations', {text: text, ontologies: includedOntologies})
 				.then(function(result){
 					var resultBox = $('#annotationResult')
 

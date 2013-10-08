@@ -9,7 +9,12 @@ angular.module('myApp.controllers', [])
 		$scope.textToAnnotate = 'Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye'
 		$scope.uploadFile
 		$scope.options = {
-			showAllInstances: true
+			showAllInstances: true,
+			ontologies: {
+				Radlex: true,
+				SNOMED: true,
+				LOINC: true
+			}
 		}
 
 		$scope.annotateText = function(){
