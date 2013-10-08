@@ -7,7 +7,18 @@
 // In this case it is a simple value service.
 angular.module('myApp.services', [])
   .service('Annotator', ['$http', function($http){
-  		var that = this
+  		var that = this,
+  			ontologies = {
+  				/*---------------------
+				// virtual ontology ids:
+				// Radlex: 1057/50515
+				// LOINC: 1350/47637
+				// SNOMED: 1353/46896
+				*/
+				'50515': 'Radlex',
+				'47637': 'LOINC',
+				'46896': 'SNOMED'
+  			}
 
 		this.notateText = function(text, opts, cb){
 			var defaultOpts = {
@@ -188,7 +199,7 @@ angular.module('myApp.services', [])
 
 						_.forEach(terms, function(term){
 							var termCoords = _.reduce(term, function(prev, ontology, key){
-									return (key !== '_id') ? prev : prev.concat(ontology.coords)
+									return (key === '_id') ? prev : prev.concat(ontology.coords)
 								}, [])
 							if (opts.showAllInstances){
 								_.forEach(termCoords, function(coord){
@@ -209,10 +220,17 @@ angular.module('myApp.services', [])
 						if (matchedPhrases[i].length > 0){
 							newText += '<span id="w_'+i+'" class="matched-word '+classes+'">' + word +
 								'<div class="underline-container">'
+
+							/*
+							// add div for underlines
+							*/	
+							
+							/*
+							// add empty divs for padding
 							if (i > 0 && matchedPhrases[i-1].length > 0){
 								matchedPhrases[i] = addPadding(matchedPhrases[i], matchedPhrases[i-1])
 							}
-							// add empty divs for padding
+							
 							_.forEach(matchedPhrases[i], function(termId){
 								if (termId === 0){
 									newText += '<div class="padding"></div>'
@@ -220,6 +238,8 @@ angular.module('myApp.services', [])
 									newText += '<div class="underline t_'+termId+'"></div>'
 								}
 							})
+							*/
+
 							newText += '</div></span> '
 
 						} else {
@@ -258,7 +278,7 @@ angular.module('myApp.services', [])
 
 			// aggregate terms by location, so we have a single set of data for each
 			// clickable term
-			_.forEach(terms, function(term){
+			/*_.forEach(terms, function(term){
 				var loc = term.coords[0] + ',' + term.coords[1]
 				if (_.isUndefined(termsByLoc[loc])){
 					termsByLoc[loc] = term
@@ -268,21 +288,26 @@ angular.module('myApp.services', [])
 					termsByLoc[loc].isA = _.union(termsByLoc[loc].isA, term.isA)
 					termsByLoc[loc].ontology = _.union(termsByLoc[loc].ontology, term.ontology)
 				}
-			})
+			})*/
 
 			_.forEach(terms, function(term){
-				var termDetails = '<h4>Preferred Name:</h4>'+
-					'<span>'+term.term.join(', ')+'</span>'+
-					'<h4>Is a:</h4>'+
-					'<span>'+term.isA.join(', ')+'</span>'+
-					'<h4>Link:</h4>'+
-					'<a href="'+term.link+'" title="'+term.link+'" target="_blank">BioPortal Definition</a>'+
-					'<h4>Matched Ontology:</h4>'+
-					'<span>'+term.ontology.join(', ')+'</span>'
+				var termDetails = ''
+
+				_.forEach(term, function(ontol, key){
+					if (key === '_id'){ return false }
+					termDetails += '<h4>'+ontologies[key]+'</h4>'+
+						'<h5>Preferred Name:</h5>'+
+						'<span><a href="'+ontol.link+'" title="'+ontol.link+'" target="_blank">'+ontol.term+'</a></span>'
+						//'<h5>Is a:</h5>'+
+						//'<span>'+ontol.isA.join(', ')+'</span>'+
+						//'<h5>Link:</h5>'+
+						//'<a href="'+ontol.link+'" title="'+ontol.link+'" target="_blank">BioPortal Definition</a>'
+				})
 
 				var words = $('.matched-word.t_'+term._id)
 
 				_.forEach(words, function(word){
+					word = $(word)
 					// add matched info and listener if needed
 					if (word.hasClass('term_hilite')){
 					// click event already attached, just append info
@@ -298,8 +323,10 @@ angular.module('myApp.services', [])
 					}
 				})
 
+				/*
 				$('.underline.t_'+term._id)
 					.css({'background-color': '#'+(Math.random().toString(16) + '000000').slice(2, 8)})
+				*/
 			})
 		}
 	}])

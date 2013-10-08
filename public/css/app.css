@@ -6,7 +6,10 @@ html, body {
 	position: relative;
 }
 #resultDetails {
-	position: fixed
+	position: fixed;
+	top: 70px;
+	bottom: 0px;
+	overflow-y: scroll;
 }
 #annotationResult {
 	line-height: 34px;
