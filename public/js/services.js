@@ -39,232 +39,250 @@ angular.module('myApp.services', [])
 
 			text = text.replace(/\n/g, ' <br> ')
 
-			console.log('sent annotator request')
+			var includedOntologies = [],
+				annotatorResult = []
 
-			var includedOntologies = []
 			_.forEach(opts.ontologies, function(ont, key){ if (ont) { includedOntologies.push(virtualIds[key]) }})
 
-			$http.post('/api/getTerms/annotations', {text: text, ontologies: includedOntologies})
-				.then(function(result){
-					var resultBox = $('#annotationResult')
+			function queryAnnotator(ontology, callback){
+				console.log('sent annotator request')
+				$http.post('/api/getTerms/annotations', {text: text, ontologies: [ontology]})
+					.then(function(result){
+						console.log('annotator results returned')
+						annotatorResult = annotatorResult.concat(result.data)
+						callback()
+					}, function(err){
+						callback(err)
+					})
+			}
 
-					console.log('annotator results returned')
+			async.each(includedOntologies, queryAnnotator, function(err){
+				if (err){
+					console.log(err)
+					return false
+				}
+				console.log('all results returned')
+				processMatches(annotatorResult)
+			})
 
-					/*
-					/* aggregate data for each matched term by term and ontology based on location
-					/* 
-					{
-						'preferred_name': {
-							ontology_id_1: {
-								term: 'String',
-								isA: ['String'],
-								coords: [ [from,to], ... ], // all other instances of the term
-								link: 'link to bioportal term def'
-							},
-							ontology_id_2: {
-								...
-							}
+			var processMatches = function(result){
+				var resultBox = $('#annotationResult')
+
+				/*
+				/* aggregate data for each matched term by term and ontology based on location
+				/* 
+				{
+					'preferred_name': {
+						ontology_id_1: {
+							term: 'String',
+							isA: ['String'],
+							coords: [ [from,to], ... ], // all other instances of the term
+							link: 'link to bioportal term def'
+						},
+						ontology_id_2: {
+							...
 						}
-					
 					}
-					*/
-					var terms = {}
+				
+				}
+				*/
+				var terms = {}
 
-					_.forEach(result.data, function(val){
-						if (_.isUndefined(terms[val.term])){
-							terms[val.term] = {}
+				_.forEach(result, function(val){
+					if (_.isUndefined(terms[val.term])){
+						terms[val.term] = {}
+					}
+					if (_.isUndefined(terms[val.term][val.ontology])){
+						terms[val.term][val.ontology] = {
+							term: val.term,
+							isA: _.isUndefined(val.isA) ? [] : [val.isA],
+							coords: [[val.from, val.to]],
+							link: val.link
 						}
-						if (_.isUndefined(terms[val.term][val.ontology])){
-							terms[val.term][val.ontology] = {
-								term: val.term,
-								isA: _.isUndefined(val.isA) ? [] : [val.isA],
-								coords: [[val.from, val.to]],
-								link: val.link
+					} else {
+						/*var matchedTerms = _.reduce(terms[val.term], function(prev, ontology){
+								return concat(prev, ontology.coords)
+							}, [])*/
+						var termMatched = _.filter(terms[val.term][val.ontology].coords, function(coord){
+												return _.isEqual(coord, [val.from, val.to])
+											}).length
+						if (termMatched > 0){
+							// matched term already seen, could have different isA definition
+							if (!_.isUndefined(val.isA) && !_.contains(terms[val.term][val.ontology].isA, val.isA)){
+								terms[val.term][val.ontology].isA.push(val.isA)
 							}
 						} else {
-							/*var matchedTerms = _.reduce(terms[val.term], function(prev, ontology){
-									return concat(prev, ontology.coords)
-								}, [])*/
-							var termMatched = _.filter(terms[val.term][val.ontology].coords, function(coord){
-													return _.isEqual(coord, [val.from, val.to])
-												}).length
-							if (termMatched > 0){
-								// matched term already seen, could have different isA definition
-								if (!_.isUndefined(val.isA) && !_.contains(terms[val.term][val.ontology].isA, val.isA)){
-									terms[val.term][val.ontology].isA.push(val.isA)
-								}
-							} else {
-								// matched term coords not seen yet, add to list
-								terms[val.term][val.ontology].coords.push([val.from, val.to])
-							}
+							// matched term coords not seen yet, add to list
+							terms[val.term][val.ontology].coords.push([val.from, val.to])
 						}
-					})
+					}
+				})
 
-					/*
-					/* Sort terms by first occurrence
-					*/
-					if (!opts.showAllInstances){
-						// first sort each term's instances
-						_.forEach(terms, function(term, i){
-							_.forEach(term, function(val, key){
-								terms[i][key].coords = _.sortBy(val.coords, function(coord){return coord[0]})
-							})
+				/*
+				/* Sort terms by first occurrence
+				*/
+				if (!opts.showAllInstances){
+					// first sort each term's instances
+					_.forEach(terms, function(term, i){
+						_.forEach(term, function(val, key){
+							terms[i][key].coords = _.sortBy(val.coords, function(coord){return coord[0]})
 						})
-						// then sort terms by their first instance's location
-						terms = _.sortBy(terms, function(term){return term[0].coords[0][0]})
-					}
-
-					/*
-					/* give each term an id for use with assigning highlighting classes
-					*/
-					var i = 1
-					terms = _.map(terms, function(term){
-						term._id = i
-						i++
-						return term
 					})
+					// then sort terms by their first instance's location
+					terms = _.sortBy(terms, function(term){return term[0].coords[0][0]})
+				}
 
-					/*
-					/* start sorting out words, and which phrases they are included in
-					*/
+				/*
+				/* give each term an id for use with assigning highlighting classes
+				*/
+				var i = 1
+				terms = _.map(terms, function(term){
+					term._id = i
+					i++
+					return term
+				})
 
-					// return first non-space character index
-					function getNextStart(text, startIndex){
-						var startIndex = startIndex || 0
+				/*
+				/* start sorting out words, and which phrases they are included in
+				*/
 
-						if (text.substr(startIndex, 1) != ' '){ return startIndex }
+				// return first non-space character index
+				function getNextStart(text, startIndex){
+					var startIndex = startIndex || 0
 
-						var	nextSpace = text.indexOf(' ', startIndex),
-							nextWord = nextSpace + 1
+					if (text.substr(startIndex, 1) != ' '){ return startIndex }
 
-						while (text.substr(nextWord, 1) == ' '){
-							nextWord += 1
+					var	nextSpace = text.indexOf(' ', startIndex),
+						nextWord = nextSpace + 1
+
+					while (text.substr(nextWord, 1) == ' '){
+						nextWord += 1
+					}
+
+					return nextWord
+				}
+
+				// return first space character index
+				function getNextEnd(text, startIndex){
+					var end = text.indexOf(' ', startIndex || 0)
+					return end === -1 ? text.length : end
+				}
+
+
+				//build array of each word in text box, as bounded by space character
+				function getWords(text, startIndex, endIndex){
+					var startIndex = startIndex || 0,
+						endIndex = endIndex || text.length,
+						words = []
+
+					while (startIndex < endIndex) {
+						var next = getNextStart(text, startIndex),
+							end = getNextEnd(text, next)
+						words.push([next, end])
+						startIndex = end
+					}
+
+					return words
+				}
+
+				var newText = '',
+					words = getWords(text)
+
+				// for each word in raw text, check if it falls within
+				// any term's bounds, and if it does, add that term's class
+				function isInBounds(val, bounds){
+				// takes val [from, to] and bounds [from, to]. Returns true if val.from is equal to
+				// bounds.from or between bounds.from and bounds.to
+				// TODO: make option for index correction (this data source uses first char as index 1)
+					if (val[0] === bounds[0] - 1 || (val[0] > bounds[0] - 1 && val[0] < bounds[1])){
+						return true
+					}
+				}
+				function addPadding(curr, last){
+					// check if previous word matched same term
+					var padded = [],
+						intersection = _.intersection(curr, last),
+						difference = _.difference(curr, last)
+
+					_.forEach(intersection, function(termId, i){
+						var lastIndex = _.indexOf(last, termId)
+						if (lastIndex > -1){
+							for (var j=padded.length; j<lastIndex; j++){ padded.push(0) }
 						}
+						padded.push(termId)
+					})
+					// tack on terms not matched on prior word
+					return padded.concat(difference)
+				}
 
-						return nextWord
-					}
+				var matchedPhrases = []
+				_.forEach(words, function(val, i){
+					var classes = '',
+						divPadding = 0,
+						word = text.substr(val[0],val[1]-val[0])
 
-					// return first space character index
-					function getNextEnd(text, startIndex){
-						var end = text.indexOf(' ', startIndex || 0)
-						return end === -1 ? text.length : end
-					}
+					matchedPhrases[i] = []
 
-
-					//build array of each word in text box, as bounded by space character
-					function getWords(text, startIndex, endIndex){
-						var startIndex = startIndex || 0,
-							endIndex = endIndex || text.length,
-							words = []
-
-						while (startIndex < endIndex) {
-							var next = getNextStart(text, startIndex),
-								end = getNextEnd(text, next)
-							words.push([next, end])
-							startIndex = end
-						}
-
-						return words
-					}
-
-					var newText = '',
-						words = getWords(text)
-
-					// for each word in raw text, check if it falls within
-					// any term's bounds, and if it does, add that term's class
-					function isInBounds(val, bounds){
-					// takes val [from, to] and bounds [from, to]. Returns true if val.from is equal to
-					// bounds.from or between bounds.from and bounds.to
-					// TODO: make option for index correction (this data source uses first char as index 1)
-						if (val[0] === bounds[0] - 1 || (val[0] > bounds[0] - 1 && val[0] < bounds[1])){
-							return true
-						}
-					}
-					function addPadding(curr, last){
-						// check if previous word matched same term
-						var padded = [],
-							intersection = _.intersection(curr, last),
-							difference = _.difference(curr, last)
-
-						_.forEach(intersection, function(termId, i){
-							var lastIndex = _.indexOf(last, termId)
-							if (lastIndex > -1){
-								for (var j=padded.length; j<lastIndex; j++){ padded.push(0) }
-							}
-							padded.push(termId)
-						})
-						// tack on terms not matched on prior word
-						return padded.concat(difference)
-					}
-
-					var matchedPhrases = []
-					_.forEach(words, function(val, i){
-						var classes = '',
-							divPadding = 0,
-							word = text.substr(val[0],val[1]-val[0])
-
-						matchedPhrases[i] = []
-
-						_.forEach(terms, function(term){
-							var termCoords = _.reduce(term, function(prev, ontology, key){
-									return (key === '_id') ? prev : prev.concat(ontology.coords)
-								}, [])
-							if (opts.showAllInstances){
-								_.forEach(termCoords, function(coord){
-									if (isInBounds(val, coord)){
-										matchedPhrases[i].push(term._id)
-										classes += 't_'+term._id+' '
-									}
-								})	
-							} else { // only check first instance of word
-								if (isInBounds(val, termCoords[0])){
+					_.forEach(terms, function(term){
+						var termCoords = _.reduce(term, function(prev, ontology, key){
+								return (key === '_id') ? prev : prev.concat(ontology.coords)
+							}, [])
+						if (opts.showAllInstances){
+							_.forEach(termCoords, function(coord){
+								if (isInBounds(val, coord)){
 									matchedPhrases[i].push(term._id)
 									classes += 't_'+term._id+' '
 								}
+							})	
+						} else { // only check first instance of word
+							if (isInBounds(val, termCoords[0])){
+								matchedPhrases[i].push(term._id)
+								classes += 't_'+term._id+' '
 							}
-						})
-
-
-						if (matchedPhrases[i].length > 0){
-							newText += '<span id="w_'+i+'" class="matched-word '+classes+'">' + word +
-								'<div class="underline-container">'
-
-							/*
-							// add div for underlines
-							*/	
-							
-							/*
-							// add empty divs for padding
-							if (i > 0 && matchedPhrases[i-1].length > 0){
-								matchedPhrases[i] = addPadding(matchedPhrases[i], matchedPhrases[i-1])
-							}
-							
-							_.forEach(matchedPhrases[i], function(termId){
-								if (termId === 0){
-									newText += '<div class="padding"></div>'
-								} else {
-									newText += '<div class="underline t_'+termId+'"></div>'
-								}
-							})
-							*/
-
-							newText += '</div></span> '
-
-						} else {
-							newText += word + ' '
 						}
 					})
 
-					//console.log(phrases)
 
-					resultBox.html(newText)
-					that.hiliteText(terms)
+					if (matchedPhrases[i].length > 0){
+						newText += '<span id="w_'+i+'" class="matched-word '+classes+'">' + word +
+							'<div class="underline-container">'
 
-					cb(null, {
-							notatedText: newText,
-							terms: terms
+						/*
+						// add div for underlines
+						*/	
+						
+						/*
+						// add empty divs for padding
+						if (i > 0 && matchedPhrases[i-1].length > 0){
+							matchedPhrases[i] = addPadding(matchedPhrases[i], matchedPhrases[i-1])
+						}
+						
+						_.forEach(matchedPhrases[i], function(termId){
+							if (termId === 0){
+								newText += '<div class="padding"></div>'
+							} else {
+								newText += '<div class="underline t_'+termId+'"></div>'
+							}
 						})
-  				})
+						*/
+
+						newText += '</div></span> '
+
+					} else {
+						newText += word + ' '
+					}
+				})
+
+				//console.log(phrases)
+
+				resultBox.html(newText)
+				that.hiliteText(terms)
+
+				cb(null, {
+						notatedText: newText,
+						terms: terms
+					})
+			}
 		}
 
 		this.notateFile = function(files, opts, cb){

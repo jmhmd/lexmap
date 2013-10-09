@@ -9,7 +9,7 @@ html, body {
 	position: fixed;
 	top: 70px;
 	bottom: 0px;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 #annotationResult {
 	line-height: 34px;
