@@ -1,13 +1,12 @@
 var request = require('request'),
 	//xmlParser = require('xml2js').parseString,
-	sax = require('sax'),
+	xml = require('xml-object-stream'),
 	memwatch = require('memwatch'),
 	fs = require('fs')
 
-
 memwatch.on('leak', function(info) { 
-		console.log(info)
-	})
+	console.log(info)
+})
 
 //API_KEY= '24e050ca-54e0-11e0-9d7b-005056aa3316'
 var API_KEY= '5758f84b-562e-46cb-890b-ff787cc52bed',
@@ -45,43 +44,61 @@ var params = {
 	}
 
 getAnnotations = function (text, cb) {
-	result = {}
+	var result = []
 	
 	params.textToAnnotate = text || params.textToAnnotate
 	
-	var hd = new memwatch.HeapDiff()
+	//var hd = new memwatch.HeapDiff()
 	// Submit job
+	console.log('querying api...')
+	var fileStream = request.post(submitUrl, {form: params})
+
+	var parser = xml.parse(fileStream)
+
+	parser.each('annotationBean', function(val){
+		var term = {}
+		if (val.context.contextName.$text === 'CLOSURE'){
+			term.term = val.context.concept.preferredName.$text
+			term.from = parseInt(val.context.from.$text)
+			term.to = parseInt(val.context.to.$text)
+			term.isA = val.concept.preferredName.$text
+			term.link = val.context.concept.fullId.$text
+			term.ontology = val.concept.localOntologyId.$text
+		} else { // others I know of are mgrepContextBean - seems to mean it does not have is_a closure info
+			term.term = val.context.term.concept.preferredName.$text
+			term.from = parseInt(val.context.from.$text)
+			term.to = parseInt(val.context.to.$text)
+			term.link = val.context.term.concept.fullId.$text
+			term.ontology = val.context.term.concept.localOntologyId.$text
+		}
+			
+		result.push(term)
+	})
+
+	parser.on('error', function(err){
+		console.log('Error: ', err)
+	})
+
+	parser.on('end', function(){
+		console.log('finished parsing')
+
+		if (typeof cb === 'function'){
+			cb(null, result)
+		} else {
+			return result
+		}
+		//var diff = hd.end()
+		//console.log('diff: ', diff, diff.change.details)
+	})
+
+/*
 	request.post(submitUrl, {form: params}, function(error, response, body){
 		if (error){
 			console.log(error)
 			return new Error(error)
 		}
-		/*var file = new DOMParser(),
-			parser = file.parseFromString(response.body, "text/xml"),
-			annotationsXML = parser.getElementsByTagName("annotationBean")*/
-
+		
 		fs.writeFile('./annotation.txt', response.body)
-
-		/* sax parsing
-		*/
-		var parser = sax.parser(true)
-		parser.onerror = function (e) {
-		// an error happened.
-			console.log(e)
-		}
-		parser.ontext = function (t) {
-		// got some text.  t is the string of text.
-
-		}
-		parser.onopentag = function (node) {
-		// opened a tag.  node has "name" and "attributes"
-		}
-		parser.onattribute = function (attr) {
-		// an attribute.  attr has "name" and "value"
-		}
-		parser.onend = function () {
-		// parser stream is done, and ready to have more stuff written to it.
-		}
 
 		if (typeof cb === 'function'){
 			cb(null, {annotations: response.body})
@@ -91,29 +108,7 @@ getAnnotations = function (text, cb) {
 
 		var diff = hd.end()
 		console.log('diff: ', diff, diff.change.details)
-
-		/*
-		//console.log('annotator response: ',response.body)
-		xmlParser(response.body, function(err, parsedObj){
-			if (error){
-				console.log(error)
-				cb(error)
-			}
-			if (parsedObj.errorStatus){
-				cb(parsedObj.errorStatus.longMessage)
-			}
-			//var result = {}
-			//result.rawObj = parsedObj
-			//result.annotations = parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean //.annotatorResultBean.annotations.annotationBean
-
-			//console.log('result:', result)
-			if (typeof cb === 'function'){
-				cb(null, {annotations: parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean})
-			} else {
-				return {annotations: parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean}
-			}
-		})*/
-	})
+	})*/
 }
 
 module.exports = {
