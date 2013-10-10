@@ -12,8 +12,8 @@ angular.module('myApp.controllers', [])
 			showAllInstances: true,
 			ontologies: {
 				Radlex: true,
-				SNOMED: true,
-				LOINC: true
+				SNOMED: false,
+				LOINC: false
 			}
 		}
 

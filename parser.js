@@ -27,7 +27,8 @@ function getAnnotations(text, ontologies, cb){
 	an.params['ontologiesToKeepInResult'] = ontologies.join(',')
 	
 	an.getAnnotations(text, function(err, result){
-
+		cb(null, result)
+		/*
 		_.forEach(result.annotations, function(val, index){
 			var term = {}
 			if (val.context[0].contextName[0] === 'CLOSURE'){
@@ -47,9 +48,10 @@ function getAnnotations(text, ontologies, cb){
 				
 			contexts.push(term)
 		})
-		
+
 		//console.log(contexts)
 		cb(null, contexts)
+		*/
 	})
 }
 

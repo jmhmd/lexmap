@@ -1,5 +1,12 @@
 var request = require('request'),
-	xmlParser = require('xml2js').parseString
+	//xmlParser = require('xml2js').parseString,
+	sax = request('sax'),
+	memwatch = require('memwatch')
+
+
+memwatch.on('leak', function(info) { 
+		console.log(info)
+	})
 
 //API_KEY= '24e050ca-54e0-11e0-9d7b-005056aa3316'
 var API_KEY= '5758f84b-562e-46cb-890b-ff787cc52bed',
@@ -41,12 +48,28 @@ getAnnotations = function (text, cb) {
 	
 	params.textToAnnotate = text || params.textToAnnotate
 	
+	var hd = new memwatch.HeapDiff()
 	// Submit job
 	request.post(submitUrl, {form: params}, function(error, response, body){
 		if (error){
 			console.log(error)
 			return new Error(error)
 		}
+		/*var file = new DOMParser(),
+			parser = file.parseFromString(response.body, "text/xml"),
+			annotationsXML = parser.getElementsByTagName("annotationBean")*/
+
+		if (typeof cb === 'function'){
+			cb(null, {annotations: response.body})
+		} else {
+			return {annotations: response.body}
+		}
+
+		var diff = hd.end()
+		console.log('diff: ', diff, diff.change.details)
+
+		/*
+		//console.log('annotator response: ',response.body)
 		xmlParser(response.body, function(err, parsedObj){
 			if (error){
 				console.log(error)
@@ -55,17 +78,17 @@ getAnnotations = function (text, cb) {
 			if (parsedObj.errorStatus){
 				cb(parsedObj.errorStatus.longMessage)
 			}
-			var result = {}
-			result.rawObj = parsedObj
-			result.annotations = result.rawObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean //.annotatorResultBean.annotations.annotationBean
+			//var result = {}
+			//result.rawObj = parsedObj
+			//result.annotations = parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean //.annotatorResultBean.annotations.annotationBean
 
 			//console.log('result:', result)
 			if (typeof cb === 'function'){
-				cb(null, result)
+				cb(null, {annotations: parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean})
 			} else {
-				return result
+				return {annotations: parsedObj.success.data[0].annotatorResultBean[0].annotations[0].annotationBean}
 			}
-		})
+		})*/
 	})
 }
 
