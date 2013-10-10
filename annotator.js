@@ -1,7 +1,8 @@
 var request = require('request'),
 	//xmlParser = require('xml2js').parseString,
-	sax = request('sax'),
-	memwatch = require('memwatch')
+	sax = require('sax'),
+	memwatch = require('memwatch'),
+	fs = require('fs')
 
 
 memwatch.on('leak', function(info) { 
@@ -58,6 +59,29 @@ getAnnotations = function (text, cb) {
 		/*var file = new DOMParser(),
 			parser = file.parseFromString(response.body, "text/xml"),
 			annotationsXML = parser.getElementsByTagName("annotationBean")*/
+
+		fs.writeFile('./annotation.txt', response.body)
+
+		/* sax parsing
+		*/
+		var parser = sax.parser(true)
+		parser.onerror = function (e) {
+		// an error happened.
+			console.log(e)
+		}
+		parser.ontext = function (t) {
+		// got some text.  t is the string of text.
+
+		}
+		parser.onopentag = function (node) {
+		// opened a tag.  node has "name" and "attributes"
+		}
+		parser.onattribute = function (attr) {
+		// an attribute.  attr has "name" and "value"
+		}
+		parser.onend = function () {
+		// parser stream is done, and ready to have more stuff written to it.
+		}
 
 		if (typeof cb === 'function'){
 			cb(null, {annotations: response.body})
