@@ -14,16 +14,16 @@ function XmlParser(){
 
         var reader = new FileReader()
 
-        if (!files.length) {
-            cb('Please select a file!')
-            return false
+        if (files == undefined) {
+            alert('No file selected!')
         }
-
-        reader.onloadend = function(e) {
-            cb(null, extractXML(e.target.result))
-        }
-
+        else {
+            reader.onloadend = function(e) {
+                cb(null, extractXML(e.target.result))
+            }
+            
         reader.readAsText(files[0])
+        }
     }
 
     function extractXML(fileData)  {
@@ -41,42 +41,19 @@ function XmlParser(){
             x = parser.getElementsByTagName("field"),
             resultText = ''
 
-        resultText += "<table border='1'>"
         for (var i=0;i<x.length;i++){
-            //Begin Table
-            resultText += "<tr>"
 
-            //1st Column: field-->name
-            resultText += "<td> "
-            resultText += x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue
-            resultText += " </td>"
+            resultText += x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + " "
 
-            switch(x[i].getAttribute("type")) {
+            if(x[i].getAttribute("type") == 3) {
+                for (var j=0;j<x[i].getElementsByTagName("choice").length;j++) {
+                    console.log(j + " " + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + " ")
+                    console.log(x[i].getElementsByTagName("choice")[j].childNodes[0].nodeValue + " ")
+                    resultText += x[i].getElementsByTagName("choice")[j].childNodes[0].nodeValue + " "
 
-                case "1":
-                    break
-                case "2":
-                    break
-                case "3":
-                    //2nd Column: field -->choices
-                    for (var j=0;j<x[i].getElementsByTagName("choice").length;j++) {
-                        resultText += '<td> '
-                        resultText += x[i].getElementsByTagName("choice")[j].childNodes[0].nodeValue
-                        resultText += " </td>"
-
-                        //If there is more than 1 choice, add another row
-                        if ( j < x[i].getElementsByTagName("choice").length - 1) {
-                            resultText += "<tr><td></td>"
-                        }
-                    }
-                    break
-                case "4":
-                    break
-
-                resultText += "</tr>"        //End table
+                }
             }
         }
-        resultText += "</table>"
 
         return resultText
     }
