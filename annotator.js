@@ -1,6 +1,4 @@
 var request = require('request'),
-	//xmlParser = require('xml2js').parseString,
-	xml = require('xml-object-stream'),
 	memwatch = require('memwatch'),
 	fs = require('fs')
 
@@ -10,8 +8,8 @@ memwatch.on('leak', function(info) {
 
 //API_KEY= '24e050ca-54e0-11e0-9d7b-005056aa3316'
 var API_KEY= '5758f84b-562e-46cb-890b-ff787cc52bed',
-	annotatorUrl = 'http://rest.bioontology.org/obs/annotator',
-	submitUrl = annotatorUrl + '/submit/jhostetter@gmail.com'
+	annotatorUrl = 'http://data.bioontology.org/annotator'
+	//submitUrl = annotatorUrl + '/submit/jhostetter@gmail.com'
 
 var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye"
 
@@ -22,25 +20,13 @@ var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are fou
 // SNOMED: 1353/46896
 */
 var params = {
-		'longestOnly':'false',
-		'wholeWordOnly':'true',
-		'withContext':'true',
-		'filterNumber':'true', 
-		'stopWords':'',
-		'withDefaultStopWords':'false', 
-		'isStopWordsCaseSenstive':'false', 
-		'minTermSize':'3', 
-		'scored':'true',  
-		'withSynonyms':'true', 
-		'ontologiesToExpand':'1057,1350,1353',   
-		'ontologiesToKeepInResult':'1057,1350,1353',   
-		'isVirtualOntologyId':'true', 
-		'semanticTypes':'',  //T017,T047,T191&" #T999&"
-		'levelMax':'0',
-		'mappingTypes':'null', 
-		'textToAnnotate': textToAnnotate, 
-		'format':'xml',  //Output formats (one of): xml, tabDelimited, text  
-		'apikey':API_KEY,
+		'stop_words':'',
+		'minimum_match_length':'', 
+		'ontologies':'RADLEX',   
+		'semantic_types':'',  //T017,T047,T191&" #T999&"
+		'max_level':'0',
+		'text': textToAnnotate, 
+		'apikey': API_KEY,
 	}
 
 getAnnotations = function (text, cb) {
@@ -51,6 +37,11 @@ getAnnotations = function (text, cb) {
 	//var hd = new memwatch.HeapDiff()
 	// Submit job
 	console.log('querying api...')
+	request.post(annotatorUrl, {form: params}, function(err, res, body){
+		console.log(body)
+	})
+	return false
+
 	var fileStream = request.post(submitUrl, {form: params})
 
 	var parser = xml.parse(fileStream)
