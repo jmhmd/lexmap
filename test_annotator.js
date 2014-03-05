@@ -4,7 +4,7 @@ var a = require('./annotator'),
 	async = require('async'),
 	fs = require('fs')
 
-var ontologies = '1057,1350'//,1353'
+var ontologies = '1057'//,1350,1353'
 
 a.params['ontologiesToExpand'] = ontologies
 a.params['ontologiesToKeepInResult'] = ontologies
@@ -58,7 +58,7 @@ async.whilst(function(){ return i <= maxWords && i <= textArray.length }, sendQu
 		csv = csv + val.join(',') + '\n'
 	})
 
-	fs.writeFile('./test/' + maxWords + '_words_' + ontologies.split(',').join('-') + '_parsed.csv', csv, function(err){
+	fs.writeFile('./test/' + maxWords + '_words_' + ontologies.split(',').join('-') + '_parsed' + '-' + (+new Date()).toString(36) + '.csv', csv, function(err){
 		if (err){ console.log(err) }
 		console.log('wrote output to file')
 	})
