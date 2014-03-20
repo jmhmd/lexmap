@@ -15,7 +15,7 @@ var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are fou
 
 /*---------------------
 // virtual ontology ids:
-// Radlex: 1057/50515
+// Radlex: 1057/50767
 // LOINC: 1350/47637
 // SNOMED: 1353/46896
 */
@@ -26,21 +26,29 @@ var params = {
 		'semantic_types':'',  //T017,T047,T191&" #T999&"
 		'max_level':'0',
 		'text': textToAnnotate, 
-		'apikey': API_KEY,
+		'apikey': API_KEY
 	}
 
 getAnnotations = function (text, cb) {
-	var result = []
+	var result = [],
+		testing = false
 	
 	params.textToAnnotate = text || params.textToAnnotate
 	
 	//var hd = new memwatch.HeapDiff()
 	// Submit job
+	
+	/**
+	 * Post request to JSON API
+	 */
+
 	console.log('querying api...')
 	request.post(annotatorUrl, {form: params}, function(err, res, body){
 		console.log(body)
 	})
 	return false
+
+	
 
 	var fileStream = request.post(submitUrl, {form: params})
 

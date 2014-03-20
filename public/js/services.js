@@ -11,11 +11,11 @@ angular.module('myApp.services', [])
   			ontologies = {
   				/*---------------------
 				// virtual ontology ids:
-				// Radlex: 1057/50515
+				// Radlex: 1057/50767
 				// LOINC: 1350/47637
 				// SNOMED: 1353/46896
 				*/
-				'50515': 'Radlex',
+				'50767': 'Radlex',
 				'47637': 'LOINC',
 				'46896': 'SNOMED'
   			},
