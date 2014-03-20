@@ -4,7 +4,7 @@ var a = require('./annotator'),
 	async = require('async'),
 	fs = require('fs')
 
-var ontologies = '1057'//,1350,1353'
+var ontologies = '1057,1350,1353'
 
 a.params['ontologiesToExpand'] = ontologies
 a.params['ontologiesToKeepInResult'] = ontologies
@@ -14,8 +14,8 @@ var textArray = inputText.split(' ')
 
 var i = 1
 var increment = 5
-var maxWords = 500
-var resultHeaders = ['words', 'matched', 'query time']
+var maxWords = 100
+var resultHeaders = ['words', 'matched', 'query time', 'request time', 'parse time']
 var results = []
 var totalStart = new Date()
 
@@ -33,7 +33,7 @@ var sendQuery = function(cb){
 	// add words on each loop
 	var textToParse = textArray.slice(0,i).join(' ')
 
-	a.getAnnotations(textToParse, function(err, matched){
+	a.getAnnotations(textToParse, function(err, matched, reqTime, parseTime){
 		if (err){ cb(err) }
 		//else if (matched.length === 0){ cb('empty result') }
 		else {
@@ -41,7 +41,9 @@ var sendQuery = function(cb){
 			results.push([
 					i,
 					matched.length,
-					new Date(queryEnd-queryStart).getTime() / 1000
+					new Date(queryEnd-queryStart).getTime() / 1000,
+					reqTime,
+					parseTime
 				])
 			i++
 			cb()

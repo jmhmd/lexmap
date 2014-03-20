@@ -62,11 +62,17 @@ getAnnotations = function (text, cb) {
 		return false
 	}
 
+	var startRequest = new Date(),
+		startParse = false,
+		endParse = false
+
 	var fileStream = request.post(submitUrl, {form: params})
 
 	var parser = xml.parse(fileStream)
 
 	parser.each('annotationBean', function(val){
+		if (!startParse){ startParse = new Date() }
+
 		var term = {}
 		if (val.context.contextName.$text === 'CLOSURE'){
 			term.term = val.context.concept.preferredName.$text
@@ -91,10 +97,15 @@ getAnnotations = function (text, cb) {
 	})
 
 	parser.on('end', function(){
+		endParse = new Date()
+
+		var reqTime = new Date(startParse-startRequest).getTime() / 1000,
+			parseTime = new Date(endParse-startParse).getTime() / 1000
+
 		console.log('finished parsing')
 
 		if (typeof cb === 'function'){
-			cb(null, result)
+			cb(null, result, reqTime, parseTime)
 		} else {
 			return result
 		}
