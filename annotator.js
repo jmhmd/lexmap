@@ -22,7 +22,7 @@ var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are fou
 var params = {
 		'stop_words':'',
 		'minimum_match_length':'', 
-		'ontologies':'RADLEX',   
+		'ontologies':'RADLEX, LOINC, SNOMEDCT',   
 		'semantic_types':'',  //T017,T047,T191&" #T999&"
 		'max_level':'0',
 		'text': textToAnnotate, 
@@ -32,8 +32,8 @@ var params = {
 getAnnotations = function (text, cb) {
 	var result = [],
 		testing = false
-	
-	params.textToAnnotate = text || params.textToAnnotate
+
+	params.text = text || params.textToAnnotate
 	
 	//var hd = new memwatch.HeapDiff()
 	// Submit job
@@ -44,12 +44,43 @@ getAnnotations = function (text, cb) {
 
 	console.log('querying api...')
 	request.post(annotatorUrl, {form: params}, function(err, res, body){
-		console.log(body)
+
+		if (testing){
+			fs.writeFile('./annotation_result.js', body)
+		}
+
+		body = JSON.parse(body)
+
+		body.forEach(function(match){
+
+			var term = {},
+				an = match.annotations[0]
+
+			term.term = an.text
+			term.from = an.from
+			term.to = an.to
+			term.isA = an.matchType
+			term.link = match.annotatedClass.links.ui
+			term.ontology = match.annotatedClass.links.ontology.split('/').pop()
+				
+			result.push(term)
+		})
+
+		console.log('finished parsing')
+
+		//fs.writeFile('./annotation_result.js', JSON.stringify(result))
+
+		if (typeof cb === 'function'){
+			cb(null, result)
+		} else {
+			return result
+		}
+
 	})
-	return false
+
 
 	
-
+/*
 	var fileStream = request.post(submitUrl, {form: params})
 
 	var parser = xml.parse(fileStream)
@@ -88,7 +119,7 @@ getAnnotations = function (text, cb) {
 		}
 		//var diff = hd.end()
 		//console.log('diff: ', diff, diff.change.details)
-	})
+	})*/
 
 /*
 	request.post(submitUrl, {form: params}, function(error, response, body){

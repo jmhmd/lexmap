@@ -2,28 +2,42 @@
 
 /* Services */
 
+function convertStupidURL(url){
+	var needle = 'conceptid='
+
+	if (url.indexOf(needle) === -1){
+
+		return url
+	} else {
+
+		var split = url.split(needle),
+			tail = encodeURIComponent(split[1])
+
+		return split[0] + needle + tail
+	}
+}
 
 // Demonstrate how to register services
 // In this case it is a simple value service.
 angular.module('myApp.services', [])
   .service('Annotator', ['$http', function($http){
-  		var that = this,
-  			ontologies = {
-  				/*---------------------
-				// virtual ontology ids:
-				// Radlex: 1057/50767
-				// LOINC: 1350/47637
-				// SNOMED: 1353/46896
-				*/
-				'50767': 'Radlex',
-				'47637': 'LOINC',
-				'46896': 'SNOMED'
-  			},
-  			virtualIds = {
-  				Radlex: '1057',
-  				LOINC: '1350',
-  				SNOMED: '1353'
-  			}
+  		var that = this
+  		// 	ontologies = {
+  		// 		/*---------------------
+				// // virtual ontology ids:
+				// // Radlex: 1057/50767
+				// // LOINC: 1350/47637
+				// // SNOMED: 1353/46896
+				// */
+				// '50767': 'Radlex',
+				// '47637': 'LOINC',
+				// '46896': 'SNOMED'
+  		// 	},
+  		// 	virtualIds = {
+  		// 		Radlex: '1057',
+  		// 		LOINC: '1350',
+  		// 		SNOMED: '1353'
+  		// 	}
 
 		this.notateText = function(text, opts, cb){
 			var defaultOpts = {
@@ -39,10 +53,12 @@ angular.module('myApp.services', [])
 
 			text = text.replace(/\n/g, ' <br> ')
 
-			var includedOntologies = [],
+			console.log(opts)
+
+			var includedOntologies = [], //_.forEach(opts.ontologies, function(ont){ return ont.toUpperCase() }),
 				annotatorResult = []
 
-			_.forEach(opts.ontologies, function(ont, key){ if (ont) { includedOntologies.push(virtualIds[key]) }})
+			_.forEach(opts.ontologies, function(ont, key){ if (ont) { includedOntologies.push(key.toUpperCase()) }})
 
 			function queryAnnotator(ontology, callback){
 				console.log('sent annotator request')
@@ -321,7 +337,7 @@ angular.module('myApp.services', [])
 
 				_.forEach(term, function(ontol, key){
 					if (key === '_id'){ return false }
-					termDetails += '<h4>'+ontologies[key]+'</h4>'+
+					termDetails += '<h4>'+key+'</h4>'+
 						'<h5>Preferred Name:</h5>'+
 						'<span><a href="'+ontol.link+'" title="'+ontol.link+'" target="_blank">'+ontol.term+'</a></span>'
 						//'<h5>Is a:</h5>'+
