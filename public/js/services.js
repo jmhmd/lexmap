@@ -36,7 +36,7 @@ angular.module('myApp.services', [])
 			else if (_.isObject(opts)){
 				_.defaults(opts,defaultOpts)
 			}
-
+			console.log(text)
 			text = text.replace(/\n/g, ' <br> ')
 
 			var includedOntologies = [],

@@ -3,6 +3,7 @@
  */
 
 var parser = require('../parser')
+var request = require('request')
 
 exports.getTerms = function (req, res) {
 	var type = req.params.type
@@ -43,4 +44,18 @@ exports.getTerms = function (req, res) {
 	} else {
 		res.send('404')
 	}
+}
+
+exports.getReportList = function (req, res) {
+
+	request('http://www.radreport.org/json/', function(error, result, body) {
+		res.send('200', result.body)
+	})
+}
+
+exports.getTemplate = function (req, res) {
+
+	request('http://www.radreport.org/json/template/?id=' + req.body.id + '&format=text', function(error, result, body) {
+		res.send('200', result.body)
+	})
 }

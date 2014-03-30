@@ -78,6 +78,16 @@
 							</div>
 						</form>
 					</tab>
+					<tab heading="RadReport">
+						<form>
+							<div class="form-group">
+								<select ng-model="template" ng-options="t.title for t in templateList"></select>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" ng-click="getTemplate()">Verify Template</button>
+							</div>
+						</form>
+					</tab>
 				</tabset>
 				<div class="well well-sm">
 					<h4>Options</h4>
