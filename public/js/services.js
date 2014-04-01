@@ -2,7 +2,6 @@
 
 /* Services */
 
-
 // Demonstrate how to register services
 // In this case it is a simple value service.
 angular.module('myApp.services', [])
@@ -36,8 +35,33 @@ angular.module('myApp.services', [])
 			else if (_.isObject(opts)){
 				_.defaults(opts,defaultOpts)
 			}
-			console.log(text)
+
+			var wordcount = text
 			text = text.replace(/\n/g, ' <br> ')
+
+			wordcount = wordcount.replace(/\[/g, ' ')
+			wordcount = wordcount.replace(/\]/g, ' ')
+			wordcount = wordcount.replace(/\*/g, ' ')
+			wordcount = wordcount.replace(/\{/g, ' ')
+			wordcount = wordcount.replace(/\}/g, ' ')
+			wordcount = wordcount.replace(/\(/g, ' ')
+			wordcount = wordcount.replace(/\)/g, ' ')
+			wordcount = wordcount.replace(/\|/g, ' ')
+			wordcount = wordcount.replace(/\-/g, ' ')
+			wordcount = wordcount.replace(/\#/g, ' ')
+			wordcount = wordcount.replace(/\:/g, ' ')
+			wordcount = wordcount.replace(/\;/g, ' ')
+			wordcount = wordcount.replace(/\,/g, ' ')
+			wordcount = wordcount.replace(/\./g, ' ')
+			wordcount = wordcount.replace(/\\/g, ' ')
+			wordcount = wordcount.replace(/\//g, ' ')
+			wordcount = wordcount.replace(/\n/g, ' ')
+			wordcount = wordcount.replace(/\r/g, ' ')
+			wordcount = wordcount.replace(/\f/g, ' ')
+
+			wordcount = _.pull(wordcount.split(' '), "")
+
+			console.log('Total Words: ' + wordcount.length)
 
 			var includedOntologies = [],
 				annotatorResult = []
@@ -277,6 +301,7 @@ angular.module('myApp.services', [])
 
 				resultBox.html(newText)
 				that.hiliteText(terms)
+				console.log('Matched Annotations: ' + terms.length)
 
 				cb(null, {
 						notatedText: newText,
