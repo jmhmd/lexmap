@@ -36,32 +36,8 @@ angular.module('myApp.services', [])
 				_.defaults(opts,defaultOpts)
 			}
 
-			var wordcount = text
+			getWordCount(text)
 			text = text.replace(/\n/g, ' <br> ')
-
-			wordcount = wordcount.replace(/\[/g, ' ')
-			wordcount = wordcount.replace(/\]/g, ' ')
-			wordcount = wordcount.replace(/\*/g, ' ')
-			wordcount = wordcount.replace(/\{/g, ' ')
-			wordcount = wordcount.replace(/\}/g, ' ')
-			wordcount = wordcount.replace(/\(/g, ' ')
-			wordcount = wordcount.replace(/\)/g, ' ')
-			wordcount = wordcount.replace(/\|/g, ' ')
-			wordcount = wordcount.replace(/\-/g, ' ')
-			wordcount = wordcount.replace(/\#/g, ' ')
-			wordcount = wordcount.replace(/\:/g, ' ')
-			wordcount = wordcount.replace(/\;/g, ' ')
-			wordcount = wordcount.replace(/\,/g, ' ')
-			wordcount = wordcount.replace(/\./g, ' ')
-			wordcount = wordcount.replace(/\\/g, ' ')
-			wordcount = wordcount.replace(/\//g, ' ')
-			wordcount = wordcount.replace(/\n/g, ' ')
-			wordcount = wordcount.replace(/\r/g, ' ')
-			wordcount = wordcount.replace(/\f/g, ' ')
-
-			wordcount = _.pull(wordcount.split(' '), "")
-
-			console.log('Total Words: ' + wordcount.length)
 
 			var includedOntologies = [],
 				annotatorResult = []
@@ -88,6 +64,37 @@ angular.module('myApp.services', [])
 				console.log('all results returned')
 				processMatches(annotatorResult)
 			})
+
+			function getWordCount(array) {
+				array = array.replace(/\[/g, ' ')
+				array = array.replace(/\]/g, ' ')
+				array = array.replace(/\*/g, ' ')
+				array = array.replace(/\{/g, ' ')
+				array = array.replace(/\}/g, ' ')
+				array = array.replace(/\(/g, ' ')
+				array = array.replace(/\)/g, ' ')
+				array = array.replace(/\|/g, ' ')
+				array = array.replace(/\-/g, ' ')
+				array = array.replace(/\#/g, ' ')
+				array = array.replace(/\:/g, ' ')
+				array = array.replace(/\;/g, ' ')
+				array = array.replace(/\,/g, ' ')
+				array = array.replace(/\./g, ' ')
+				array = array.replace(/\\/g, ' ')
+				array = array.replace(/\//g, ' ')
+				array = array.replace(/\n/g, ' ')
+				array = array.replace(/\r/g, ' ')
+				array = array.replace(/\f/g, ' ')
+
+				array = _.pull(array.split(' '), "")
+
+				console.log('Total Words:' + array.length)
+				array = _.uniq(array, function(word) { return word.toLowerCase()})
+
+				console.log(array)
+
+				console.log('Total Words: ' + array.length)
+			}
 
 			var processMatches = function(result){
 				var resultBox = $('#annotationResult')
