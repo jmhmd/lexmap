@@ -24,6 +24,8 @@ angular.module('myApp.services', [])
   				SNOMED: '1353'
   			}
 
+  		var outputArray = ['Total Words','Total Unique Words','Total Annotations']
+
 		this.notateText = function(text, opts, cb){
 			var defaultOpts = {
 					showAllInstances: true
@@ -45,10 +47,10 @@ angular.module('myApp.services', [])
 			_.forEach(opts.ontologies, function(ont, key){ if (ont) { includedOntologies.push(virtualIds[key]) }})
 
 			function queryAnnotator(ontology, callback){
-				console.log('sent annotator request')
+				//console.log('sent annotator request')
 				$http.post('/api/getTerms/annotations', {text: text, ontologies: [ontology]})
 					.then(function(result){
-						console.log('annotator results returned')
+						//console.log('annotator results returned')
 						annotatorResult = annotatorResult.concat(result.data)
 						callback()
 					}, function(err){
@@ -61,7 +63,7 @@ angular.module('myApp.services', [])
 					console.log(err)
 					return false
 				}
-				console.log('all results returned')
+				//console.log('all results returned')
 				processMatches(annotatorResult)
 			})
 
@@ -89,11 +91,11 @@ angular.module('myApp.services', [])
 				array = _.pull(array.split(' '), "")
 
 				console.log('Total Words:' + array.length)
+				outputArray += "\n" + array.length + ","
 				array = _.uniq(array, function(word) { return word.toLowerCase()})
 
-				console.log(array)
-
-				console.log('Total Words: ' + array.length)
+				outputArray += array.length + ","
+				console.log('Total Unique Words: ' + array.length)
 			}
 
 			var processMatches = function(result){
@@ -308,7 +310,10 @@ angular.module('myApp.services', [])
 
 				resultBox.html(newText)
 				that.hiliteText(terms)
+
+				outputArray += terms.length
 				console.log('Matched Annotations: ' + terms.length)
+				//console.log(outputArray)
 
 				cb(null, {
 						notatedText: newText,

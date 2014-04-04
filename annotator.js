@@ -53,7 +53,7 @@ getAnnotations = function (text, cb) {
 	
 	//var hd = new memwatch.HeapDiff()
 	// Submit job
-	console.log('querying api...')
+	//console.log('querying api...')
 	
 	if (testing){
 		request.post(submitUrl, {form: params}, function(err, res, body){
@@ -91,7 +91,7 @@ getAnnotations = function (text, cb) {
 	})
 
 	parser.on('end', function(){
-		console.log('finished parsing')
+		//console.log('finished parsing')
 
 		if (typeof cb === 'function'){
 			cb(null, result)

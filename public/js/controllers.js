@@ -46,6 +46,7 @@ angular.module('myApp.controllers', [])
 
 			$http.post('/api/getTemplate', template).then( function(result) {
 				$scope.radReport = result.data.response.template[0].templateData
+				console.log(result.data.response.template[0].title)
 				
 				Annotator.notateText($scope.radReport, $scope.options, function(err){
 					spinner.stop()
