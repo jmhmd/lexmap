@@ -1,10 +1,10 @@
-# RLVerify
+# Lexmap
 
 created by Jason Hostetter, M.D. and Jim Morrison, M.D., 2013
 
 ## License
 
-RLVerify
+Lexmap
 Copyright (C) 2013 Jason Hostetter, M.D. and Jim Morrison, M.D.
 
 This program is free software: you can redistribute it and/or modify
