@@ -19,7 +19,12 @@ var app = module.exports = express()
 // all environments
 app.set('port', process.env.PORT || 3000)
 app.set('view engine', 'ejs')
-app.use(express.logger('dev'))
+if (app.get('env') === 'development') {
+  app.use(express.logger('dev'))
+}
+if (app.get('env') === 'production') {
+  app.use(express.logger())
+}
 app.use(express.bodyParser())
 app.use(express.methodOverride())
 
