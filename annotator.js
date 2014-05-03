@@ -20,7 +20,7 @@ var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are fou
 // SNOMED: 1353/46896
 */
 var params = {
-		'stop_words':'',
+		'stop_words':'<table>, </table>, <tr>, </tr>, <td>, </td>',
 		'minimum_match_length':'', 
 		'ontologies':'RADLEX, LOINC, SNOMEDCT',   
 		'semantic_types':'',  //T017,T047,T191&" #T999&"

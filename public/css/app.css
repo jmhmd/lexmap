@@ -14,6 +14,9 @@ html, body {
 #annotationResult {
 	line-height: 34px;
 }
+#annotationResult td {
+	border: 1px solid gray;
+}
 form.verifier-options p {
 	margin-top: 20px;
 	margin-bottom: 0;

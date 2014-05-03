@@ -55,7 +55,7 @@ function XmlParser(){
             }
         }*/
 
-        resultText += "<table border='1'>"
+        resultText += "<table>"
         for (var i=0;i<x.length;i++){
             //Begin Table
             resultText += "<tr>"
@@ -92,6 +92,7 @@ function XmlParser(){
         }
         resultText += "</table>"
 
+        console.log(resultText)
         return resultText
     }
 
