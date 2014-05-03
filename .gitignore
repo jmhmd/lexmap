@@ -1,3 +1,4 @@
+build/
 assets/xml/
 node_modules/
 rlverify.sublime-workspace
