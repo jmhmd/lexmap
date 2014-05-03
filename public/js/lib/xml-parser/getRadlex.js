@@ -92,7 +92,6 @@ function XmlParser(){
         }
         resultText += "</table>"
 
-        console.log(resultText)
         return resultText
     }
 
