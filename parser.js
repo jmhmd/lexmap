@@ -22,9 +22,8 @@ function getAnnotations(text, ontologies, cb){
 	
 	var contexts = []
 
-	an.params['levelMax'] = 3
-	an.params['ontologiesToExpand'] = ontologies.join(',')
-	an.params['ontologiesToKeepInResult'] = ontologies.join(',')
+	an.params['max_level'] = 3
+	an.params['ontologies'] = ontologies.join(',')
 	
 	an.getAnnotations(text, function(err, result){
 		//console.log(contexts)

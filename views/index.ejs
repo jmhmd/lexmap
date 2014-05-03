@@ -106,22 +106,10 @@
 							</label>
 						</div>-->
 						<p class="help-block">Choose which ontologies to verify against:</p>
-						<div class="checkbox">
+						<div class="checkbox" ng-repeat="(ontology, checked) in options.ontologies">
 							<label>
-								<input type="checkbox" ng-model="options.ontologies.Radlex">
-								Radlex 
-							</label>
-						</div>
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" ng-model="options.ontologies.SNOMED">
-								SNOMED 
-							</label>
-						</div>
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" ng-model="options.ontologies.LOINC">
-								LOINC 
+								<input type="checkbox" ng-model="options.ontologies[ontology]">
+								{{ontology}} 
 							</label>
 						</div>
 					</form>

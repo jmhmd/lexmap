@@ -1,6 +1,4 @@
 var request = require('request'),
-	//xmlParser = require('xml2js').parseString,
-	xml = require('xml-object-stream'),
 	memwatch = require('memwatch'),
 	fs = require('fs')
 
@@ -10,8 +8,8 @@ memwatch.on('leak', function(info) {
 
 //API_KEY= '24e050ca-54e0-11e0-9d7b-005056aa3316'
 var API_KEY= '5758f84b-562e-46cb-890b-ff787cc52bed',
-	annotatorUrl = 'http://rest.bioontology.org/obs/annotator',
-	submitUrl = annotatorUrl + '/submit/jhostetter@gmail.com'
+	annotatorUrl = 'http://data.bioontology.org/annotator'
+	//submitUrl = annotatorUrl + '/submit/jhostetter@gmail.com'
 
 var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are found predominantly in skin but also in the bowel and the eye"
 
@@ -22,46 +20,67 @@ var textToAnnotate = "Melanoma is a malignant tumor of melanocytes which are fou
 // SNOMED: 1353/46896
 */
 var params = {
-		'longestOnly':'false',
-		'wholeWordOnly':'true',
-		'withContext':'true',
-		'filterNumber':'true', 
-		'stopWords':'',
-		'withDefaultStopWords':'false', 
-		'isStopWordsCaseSenstive':'false', 
-		'minTermSize':'3', 
-		'scored':'true',  
-		'withSynonyms':'true', 
-		// 'ontologiesToExpand':'1057,1350,1353',   
-		// 'ontologiesToKeepInResult':'1057,1350,1353',   
-		'ontologiesToExpand':'1057',
-		'ontologiesToKeepInResult':'1057',
-		'isVirtualOntologyId':'true', 
-		'semanticTypes':'',  //T017,T047,T191&" #T999&"
-		'levelMax':'0',
-		'mappingTypes':'null', 
-		'textToAnnotate': textToAnnotate, 
-		'format':'xml',  //Output formats (one of): xml, tabDelimited, text  
-		'apikey':API_KEY,
+		'stop_words':'',
+		'minimum_match_length':'', 
+		'ontologies':'RADLEX, LOINC, SNOMEDCT',   
+		'semantic_types':'',  //T017,T047,T191&" #T999&"
+		'max_level':'0',
+		'text': textToAnnotate, 
+		'apikey': API_KEY
 	}
 
 getAnnotations = function (text, cb) {
 	var result = [],
 		testing = false
-	
-	params.textToAnnotate = text || params.textToAnnotate
+
+	params.text = text || params.textToAnnotate
 	
 	//var hd = new memwatch.HeapDiff()
 	// Submit job
-	//console.log('querying api...')
 	
-	if (testing){
-		request.post(submitUrl, {form: params}, function(err, res, body){
-			fs.writeFile('./annotation_result.txt', body)
-		})
-		return false
-	}
+	/**
+	 * Post request to JSON API
+	 */
 
+	console.log('querying api...')
+	request.post(annotatorUrl, {form: params}, function(err, res, body){
+
+		if (testing){
+			fs.writeFile('./annotation_result.js', body)
+		}
+
+		body = JSON.parse(body)
+
+		body.forEach(function(match){
+
+			var term = {},
+				an = match.annotations[0]
+
+			term.term = an.text
+			term.from = an.from
+			term.to = an.to
+			term.isA = an.matchType
+			term.link = match.annotatedClass.links.ui
+			term.ontology = match.annotatedClass.links.ontology.split('/').pop()
+				
+			result.push(term)
+		})
+
+		console.log('finished parsing')
+
+		//fs.writeFile('./annotation_result.js', JSON.stringify(result))
+
+		if (typeof cb === 'function'){
+			cb(null, result)
+		} else {
+			return result
+		}
+
+	})
+
+
+	
+/*
 	var fileStream = request.post(submitUrl, {form: params})
 
 	var parser = xml.parse(fileStream)
@@ -100,7 +119,7 @@ getAnnotations = function (text, cb) {
 		}
 		//var diff = hd.end()
 		//console.log('diff: ', diff, diff.change.details)
-	})
+	})*/
 
 /*
 	request.post(submitUrl, {form: params}, function(error, response, body){
