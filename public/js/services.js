@@ -104,6 +104,12 @@ angular.module('myApp.services', [])
 				array = array.replace(/\n/g, ' ')
 				array = array.replace(/\r/g, ' ')
 				array = array.replace(/\f/g, ' ')
+				array = array.replace(/\</g, ' ')
+				array = array.replace(/\>/g, ' ')
+				array = array.replace(/\%/g, ' ')
+				array = array.replace(/\?/g, ' ')
+				array = array.replace(/\&/g, ' ')
+				array = array.replace(/\+/g, ' ')
 
 				array = _.pull(array.split(' '), "")
 
@@ -113,6 +119,7 @@ angular.module('myApp.services', [])
 
 				outputArray += array.length + ","
 				console.log('Total Unique Words: ' + array.length)
+				console.log(array)
 			}
 
 			var processMatches = function(result){
@@ -328,9 +335,9 @@ angular.module('myApp.services', [])
 				resultBox.html(newText)
 				that.hiliteText(terms)
 
-				outputArray += terms.length
+				//outputArray += terms.length
 				console.log('Matched Annotations: ' + terms.length)
-				//console.log(outputArray)
+				console.log(terms)
 
 				cb(null, {
 						notatedText: newText,
