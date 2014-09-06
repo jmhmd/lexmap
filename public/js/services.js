@@ -154,7 +154,8 @@ angular.module('myApp.services', [])
 							term: val.term,
 							isA: _.isUndefined(val.isA) ? [] : [val.isA],
 							coords: [[val.from, val.to]],
-							link: val.link
+							link: val.link,
+							prefLabel: val.prefLabel
 						}
 					} else {
 						/*var matchedTerms = _.reduce(terms[val.term], function(prev, ontology){
@@ -382,9 +383,19 @@ angular.module('myApp.services', [])
 
 				_.forEach(term, function(ontol, key){
 					if (key === '_id'){ return false }
-					termDetails += '<h4>'+key+'</h4>'+
+					termDetails += '<h4>'+key+'</h4>'
+
+					if (ontol.isA == 'SYN'){
+
+						termDetails += '<h5>Matched Synonym:</h5>'+
+						'<span>'+ontol.term+'</span>'+
 						'<h5>Preferred Name:</h5>'+
+						'<span><a href="'+ontol.link+'" title="'+ontol.link+'" target="_blank">'+ontol.prefLabel+'</a></span>'
+					} else {
+
+						termDetails += '<h5>Matched:</h5>'+
 						'<span><a href="'+ontol.link+'" title="'+ontol.link+'" target="_blank">'+ontol.term+'</a></span>'
+					}
 						//'<h5>Is a:</h5>'+
 						//'<span>'+ontol.isA.join(', ')+'</span>'+
 						//'<h5>Link:</h5>'+

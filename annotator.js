@@ -26,7 +26,8 @@ var params = {
 		'semantic_types':'',  //T017,T047,T191&" #T999&"
 		'max_level':'0',
 		'text': textToAnnotate, 
-		'apikey': API_KEY
+		'apikey': API_KEY,
+		'include': 'prefLabel'
 	}
 
 getAnnotations = function (text, cb) {
@@ -62,6 +63,7 @@ getAnnotations = function (text, cb) {
 			term.isA = an.matchType
 			term.link = match.annotatedClass.links.ui
 			term.ontology = match.annotatedClass.links.ontology.split('/').pop()
+			term.prefLabel = match.annotatedClass.prefLabel
 				
 			result.push(term)
 		})
